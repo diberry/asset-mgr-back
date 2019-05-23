@@ -1,0 +1,7 @@
+{
+    apps: [{
+      name: 'apiServer',
+      script: './index.js',
+      watch: true
+    }]
+  }
