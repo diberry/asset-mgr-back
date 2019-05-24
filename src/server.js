@@ -11,7 +11,8 @@ const express = require('express'),
 
 require('dotenv').config();
 
-const tts = require('./tts.js');
+
+const textMiddleware = require('./text.js');
 
 const setupRouterLogger = (app, config) => {
   app.use(expressWinston.logger(config.logger.routerLogger.winston));
@@ -130,7 +131,7 @@ const setupRoutes = (app,config)=>{
   
       console.log(JSON.stringify(options));
   
-      let fileProcessed = await tts.mp3(options);
+      let fileProcessed = await textMiddleware.processText(options);
       
       answer.status = "success"; 
       answer.downloadURI=`http://${config.download.host}:${config.download.port}/download/${answer.id}.mp3`;
@@ -157,41 +158,26 @@ const setupRoutes = (app,config)=>{
       let file = req.files.fileToConvert;
       console.log(`file name = ${file.name}`);
   
-      let uploadPath = path.join(config.rootDir, `/uploads/${answer.id}-${file.name}`);
+      let fileText = await textMiddleware.saveTextToFile(config.rootDir, answer.id, file);
   
-      file.mv(uploadPath, async (err) =>{
-  
-        if (err) {
-          answer.move = {status: "failed", message: err};
-          throw(err);
-        }
-  
-        let fileText = await fs.readFile(uploadPath, "utf-8");
-        if(!fileText || fileText.length ===0){
-          answer.read = {
-            status:"failed",
-            message: "empty file"
-          }
-        }
-  
-        let options = {
-          id: answer.id,
-          text: fileText,
-          path: path.join(config.rootDir, "./out"),
-          key: process.env.SPEECHKEY,
-          region: process.env.SPEECHREGION,
-          fileExtension: '.mp3'
-        };
+      let options = {
+        id: answer.id,
+        text: fileText,
+        path: path.join(config.rootDir, "./out"),
+        key: process.env.SPEECHKEY,
+        region: process.env.SPEECHREGION,
+        voice: req.body.voice,
+        fileExtension: '.mp3'
+      };
     
-        await tts.mp3(options);
+        let fileProcessed = await textMiddleware.processText(options);
     
+        console.log(JSON.stringify(options));
+        
         answer.status = "success"; 
         answer.downloadURI=`http://${config.download.host}:${config.download.port}/download/${answer.id}.mp3`;
-        return res.status(200).send(answer);           
-      });
-  
-
-  
+        return res.status(200).send(answer);         
+ 
     } catch (error) {
       console.log(`error caught ${JSON.stringify(error)}`);
       answer.globalerror = JSON.stringify(error);

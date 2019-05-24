@@ -20,7 +20,18 @@ const getAccessToken = async (region, subscriptionKey) => {
 // https://docs.microsoft.com/en-us/azure/cognitive-services/speech-service/language-support
 const getVoice = (voice) => {
 
+    let defaultValue = {
+        "gender" : "female",
+        "locale" : "en-us",
+        "code" : "Jessa24KRUS"
+    } ;
+
+    
+    if (!voice || !voice.code) return defaultValue;
+    
+
     switch(voice.code){
+        
         case "BenjaminRUS": 
             return {
             "gender" : "male",
@@ -33,30 +44,9 @@ const getVoice = (voice) => {
                 "locale" : "en-us",
                 "code" : "Jessa24KRUS"
             } ;
-        default:
-            return {
-                "gender" : "female",
-                "locale" : "en-us",
-                "code" : "Jessa24KRUS"
-            } ;
-    }
-/*
-    if (!voice || (voice.gender === "female")){
-        return {
-            "gender" : "female",
-            "locale" : "en-us",
-            "code" : "Jessa24KRUS"
-        }
-    } else {
-        return {
-            "gender" : "male",
-            "locale" : "en-us",
-            "code" : "BenjaminRUS"
-        }
-    }
-*/
 
-    
+        
+    }
 }
 
 // Make sure to update User-Agent with the name of your resource.
