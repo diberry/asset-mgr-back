@@ -5,3 +5,4 @@ process
 node_modules
 coverage
 tmp
+coverage
