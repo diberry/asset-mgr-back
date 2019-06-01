@@ -3,3 +3,5 @@ dist
 uploads
 process
 node_modules
+coverage
+tmp
