@@ -284,6 +284,27 @@ const createAudioFile = async (config) =>{
     }
 
 }
+const translate = async (config) =>{
+    let options = {
+        method: 'POST',
+        baseUrl: 'https://api.cognitive.microsofttranslator.com/',
+        url: 'translate',
+        qs: {
+          'api-version': '3.0',
+          'to': 'it',
+          'to': 'de'
+        },
+        headers: {
+          'Ocp-Apim-Subscription-Key': "48ab0100a8d44be391fb017d0c2ff381",
+          'Content-type': 'application/json',
+          'X-ClientTraceId': uuidv4().toString()
+        },
+        body: [{
+              'text': 'Hello World!'
+        }],
+        json: true,
+    };
+}
 const createResponseObject = (config)=>{
   return {
       dateTime: new Date(), 
@@ -301,5 +322,6 @@ module.exports = {
     createResponseObject:createResponseObject,
     createAudioFile:createAudioFile,
     processManyRequestsFromJson:processManyRequestsFromJson,
-    processManyRequestsFromTsvFile:processManyRequestsFromTsvFile
+    processManyRequestsFromTsvFile:processManyRequestsFromTsvFile,
+    translate:translate
 };

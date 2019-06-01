@@ -18,6 +18,9 @@ const getConfigTest = () => {
             region: process.env.SPEECHREGION,
             key: process.env.SPEECHKEY
         },
+        translator: {
+            key: process.env.TRANSLATORKEY
+        },
         logger: {
             routerLogger:{
                 winston: {
@@ -70,6 +73,9 @@ const getConfig = () => {
         ttsService: {
             region: process.env.SPEECHREGION,
             key: process.env.SPEECHKEY
+        },
+        translator: {
+            key: process.env.TRANSLATORKEY
         },
         logger: {
             routerLogger:{

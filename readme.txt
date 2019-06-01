@@ -7,3 +7,6 @@ files uploaded to "uploads"
 mp3 files generated and put into "out", route users /download
 
 current file name is guid + ".mp3"
+
+feature flipping
+https://www.npmjs.com/package/fflip
