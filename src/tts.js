@@ -13,7 +13,7 @@ const getAccessToken = async (region, subscriptionKey) => {
         }
         return rp(options);
     } catch(err){
-        console.log("getAccessToken error " + err);
+        throw err;
     }
 
 }
@@ -56,16 +56,10 @@ const textToSpeech = async (accessToken,  filenameandpath, region,  text, voice)
 
     try{
 
-        console.log(`filenameandpath=${filenameandpath}`);
-        console.log(`region=${region}`);
-        console.log(`voice=${JSON.stringify(voice)}`);
-
         let selectedVoice = getVoice(voice);
 
         // Create the SSML request.
         let body = `<?xml version="1.0"?><speak version="1.0" xml:lang="en-us"><voice xml:lang="en-us" name="Microsoft Server Speech Text to Speech Voice (${selectedVoice.locale}, ${selectedVoice.code})"><prosody rate="-20.00%">${text}</prosody></voice></speak>`;
-
-        console.log(body);
 
         let options = {
             "method": "POST",
@@ -86,16 +80,12 @@ const textToSpeech = async (accessToken,  filenameandpath, region,  text, voice)
         .on('response', (response) => {
             if (response.statusCode === 200) {
                 request.pipe(fs.createWriteStream(filenameandpath));
-                console.log('Your file is ready.')
-            } else {
-                console.log(response.statusCode);
-                console.log(response.statusMessage);
-            }
+            } 
         });
         return request;
 
     } catch(err){
-        console.log(err);
+        throw(err);
     }
 }
 
@@ -161,19 +151,14 @@ const mp3 = async function(options) {
     try {
         // get token
         options.accessToken = await getAccessToken(answer.options.region, answer.options.key);
-        console.log("accessToken = " + options.accessToken);
 
         // get binary - tts
         answer.result["binary"] = await textToSpeech(answer.options.accessToken,answer.options.path,answer.options.region, answer.options.text, answer.options.voice);
-
-        console.log("text file created");
         
         answer.result["success"]=true;
         answer.result["file"]=answer.options.path;
         
-        console.log(JSON.stringify(answer.result));
     } catch (err) {
-        console.log(`Something went wrong: ${err}`);
         answer.error.push(JSON.stringify(err))
     } finally {
         return answer;

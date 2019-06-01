@@ -1,16 +1,15 @@
-const tts = require('./tts.js'),
-    fs = require("fs").promises,
+const fs = require("fs").promises,
+    removeMd = require('remove-markdown'),
+    uuid = require('uuid/v4'),
     detect = require('detect-csv');
+
+const tts = require('./tts.js');
 
 const processText = async (options) => {
 
-    if (isTsv(options.text)) {
-        options["knowledgeBaseAnswers"] = parseKnowledgeBaseForAnswers(options);
-    }
-
-    let fileProcessed = await tts.mp3(options);
+    return await tts.mp3(options);
 }
-const saveTextToFile = async (rootDir, id, file) => {
+const saveFileAndReadFile = async (rootDir, id, file) => {
 
     try {
         let uploadPath = path.join(rootDir, `/uploads/${id}-${file.name}`);
@@ -28,11 +27,11 @@ const saveTextToFile = async (rootDir, id, file) => {
         return fileText;
 
     } catch (err) {
-        console.log("saveTextToFile failed");
         throw err;
     }
 
 }
+// TBD - this is broken  
 const isTsv = async (text) => {
     return detect(text);
 }
@@ -97,16 +96,210 @@ const tsvToJson = (datas) => {
             }
             formated_datas.push(row);
         }
-        //console.log(formated_datas); // @TODO : remove this
         return formated_datas;
     } catch (err) {
-        //console.log(err);
         throw err;
     }
+}
+/**
+ * 
+ * @param {*} kbAsJson - array of JSON objects
+ * @param {pathInJsonToClean} string - used as `arrayItem[pathInJsonToClean]`
+ * @returns array of new property, `cleanedAnswer`
+ */
+const cleanAnswers = (kbAsJson,options,pathInJsonToClean,extraStringsToClean, removeEndOfLineMarks)=>{
+    
+    if (!kbAsJson || (!(kbAsJson instanceof Array)) || (kbAsJson.length===0)) return [];
+
+    kbAsJson.forEach((kb,index,arr)=>{
+
+        if(kb && kb[pathInJsonToClean]){
+
+            let originString = kb[pathInJsonToClean];
+
+            // remove end of line marks
+            if(removeEndOfLineMarks) {
+
+                const reg1 = new RegExp( /\\n/g );
+                originString = originString.replace(reg1, ",");
+
+                //const reg2 = new RegExp( /\n/g );
+                //originString = originString.replace(reg2, "");
+            }
+
+            // remove markdown
+            let cleanedString = removeMd(originString,options);
+
+            // remove other marks
+            cleanedString = removeStrings(cleanedString,extraStringsToClean);
+
+            // replace double commas to single comma
+            const commaReg = new RegExp(/([,]{2,})/g);
+            if(cleanedString.indexOf(",,")) cleanedString = cleanedString.replace(commaReg, ","); 
+
+            kb[pathInJsonToClean + "_cleaned"] = cleanedString;
+
+        }
+    }); 
+
+    return kbAsJson;
+}
+const removeStrings = (mytext,myStringsToRemove) => {
+
+    if(myStringsToRemove && myStringsToRemove.length>0){
+
+        myStringsToRemove.forEach((stringToRemove, index,arr) => {
+            
+            mytext = mytext.replace(stringToRemove,"");
+        })
+
+    }
+    return mytext;
+}
+const processManyRequestsFromJson = async(config) =>{
+    try{
+        let answer = createResponseObject(config);
+        answer.results = [];
+
+        let arrayOfPromises = [];
+
+        let jsonArray = config.body["json-array"];
+
+        for (const item of jsonArray) {
+
+
+            if ((typeof item) == "string") {
+                config.body.text = item;
+                let thisConfig = Object.assign({}, config, {});
+                arrayOfPromises.push(createAudioFile(thisConfig));
+            }
+        }
+
+        let answers = await Promise.all(arrayOfPromises);
+        answer.results = answers;
+        answer.statusCode = 200;
+        return answer;
+
+    }catch(error){
+        return {
+            statusCode:  500,
+            downloadURI:  undefined,
+            globalerror:  error
+        };        
+    }
+}
+const processManyRequestsFromTsvFile = async(config) =>{
+    try{
+    let answer = createResponseObject(config);
+    answer.results = [];
+
+    let resultsArr = [];
+
+    config.body.text = await saveFileAndReadFile(config.rootDir, answer.id, config.body.file);
+    let jsonObj = tsvToJson(config.body.text);
+    const cleanOptions = {
+        stripListLeaders: true, // strip list leaders (default: true)
+        listUnicodeChar: '',     // char to insert instead of stripped list leaders (default: '')
+        gfm: true,                // support GitHub-Flavored Markdown (default: true)
+        useImgAltText: true      // replace images with alt-text, if present (default: true)
+      };
+      const extraStringsToClean = ['©'];
+      const removeEndOfLineMarks = true;
+
+      // assumes QnA Maker KB only
+      let cleanedJsonObject = cleanAnswers(jsonObj, cleanOptions, "Answer", extraStringsToClean, removeEndOfLineMarks);
+
+      // reduce array to only answers
+      let arrayOfTextStrings = cleanedJsonObject.map(item => {
+        return item.Answer_cleaned;
+      });
+      config.body.type = "arrayOfStrings";
+      config.body.textArray= arrayOfTextStrings;                     
+
+      let arrayOfPromises = [];
+
+      for (const item of arrayOfTextStrings) {
+
+        if ((typeof item) == "string") {
+            config.body.text = item;
+            let thisConfig = Object.assign({}, config, {});
+            arrayOfPromises.push(createAudioFile(thisConfig));
+
+        }
+      }
+
+      let answers = await Promise.all(arrayOfPromises)
+      answer.results = answers;
+      answer.statusCode = 200;
+      return answer;
+
+    }catch(error){
+        console.log(error);
+        return {
+            statusCode:  500,
+            downloadURI:  undefined,
+            globalerror:  error
+        };        
+    }
+}
+const createAudioFile = async (config) =>{
+    try{
+
+        if((!config) && (!config.body.text || !config.body.file)) {
+            return {
+                statusCode:400,
+                error:"createAudioFile = empty params"
+            };
+        }
+
+        if((!config.hasOwnProperty("answer")) || (!config.answer.hasOwnProperty("id"))){
+            config.answer = createResponseObject(config);
+        }
+
+        let options = {
+            id: config.answer.id,
+            text: config.body.text,
+            path: config.download.dir,
+            key: config.ttsService.key,
+            region: config.ttsService.region,
+            voice: config.body.voice,
+            fileExtension: '.mp3',
+            route: config.route
+          };
+
+        let fileProcessed = await processText(options);
+        config.answer.processText = fileProcessed;
+        config.answer.statusCode = 200;
+        config.answer.downloadURI=`http://${config.download.host}:${config.download.port}/download/${config.answer.id}.mp3`;
+
+        return Object.assign({}, config.answer, {});;
+  
+    } catch(err){
+        console.log(err);
+        return {
+            statusCode:  500,
+            downloadURI:  undefined,
+            globalerror:  error
+        };
+    }
+
+}
+const createResponseObject = (config)=>{
+  return {
+      dateTime: new Date(), 
+      id: uuid(),
+      ver: config.ver,
+      status: null
+    };
 }
 
 module.exports = {
     tsvToJson: tsvToJson,
     processText: processText,
-    saveTextToFile: saveTextToFile
+    saveFileAndReadFile: saveFileAndReadFile,
+    cleanAnswers: cleanAnswers,
+    createResponseObject:createResponseObject,
+    createAudioFile:createAudioFile,
+    processManyRequestsFromJson:processManyRequestsFromJson,
+    processManyRequestsFromTsvFile:processManyRequestsFromTsvFile
 };
