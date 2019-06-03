@@ -3,7 +3,8 @@ const fs = require("fs").promises,
     uuid = require('uuid/v4'),
     detect = require('detect-csv');
 
-const tts = require('./tts.js');
+const tts = require('./tts.js'),
+    translator = require('./translate.js');
 
 const processText = async (options) => {
 
@@ -285,25 +286,24 @@ const createAudioFile = async (config) =>{
 
 }
 const translate = async (config) =>{
-    let options = {
-        method: 'POST',
-        baseUrl: 'https://api.cognitive.microsofttranslator.com/',
-        url: 'translate',
-        qs: {
-          'api-version': '3.0',
-          'to': 'it',
-          'to': 'de'
-        },
-        headers: {
-          'Ocp-Apim-Subscription-Key': "48ab0100a8d44be391fb017d0c2ff381",
-          'Content-type': 'application/json',
-          'X-ClientTraceId': uuidv4().toString()
-        },
-        body: [{
-              'text': 'Hello World!'
-        }],
-        json: true,
-    };
+    try{
+        if(!config && !config.to && !config.translatorkey && !config.textArray) throw ("text.translate params are empty");
+
+        const translations = await translator.translate(config);
+
+        if (config.tts && translations){
+            //for each item in array, get tts in output language
+            //[{"detectedLanguage":{"language":"en","score":1},"translations":[{"text":"Salve, mondo!","to":"it"},{"text":"Hallo Welt!","to":"de"}]}]
+            const cultures = translations.detectedLanguage.translation.filter(val => {
+                return val.to;
+            })
+
+        }
+
+        return translations;
+    } catch {
+
+    }
 }
 const createResponseObject = (config)=>{
   return {
