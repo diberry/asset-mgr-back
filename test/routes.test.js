@@ -99,7 +99,7 @@ describe('routes', () => {
 
             let app = server.get();
 
-            jest.setTimeout(5000);
+            jest.setTimeout(25000);
 
             request(app)
             .get('/error')
