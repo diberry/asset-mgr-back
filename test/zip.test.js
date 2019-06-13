@@ -4,7 +4,7 @@ const config = require("../src/config.js");
 
 describe('zip', () => {
 
-    it.only('created zipped file', async () => {
+    it('created zipped file', async () => {
 
         try{
             let testConfig = config.getConfigTest();
