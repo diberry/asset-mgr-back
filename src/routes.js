@@ -118,13 +118,12 @@ const postUploadTextFile = async (req, res, next) => {
         config.route = "upload";
         config.body = req.body;
         config.body.file = file;
-        config.body.text = await textMiddleware.saveFileAndReadFile(config.rootDir, config.answer.id, config.body.file);
+        config.body.text = await textMiddleware.saveFileAndReadFile(config.rootDir,  config.upload.processingDir, config.answer.id, config.body.file);
         let result = await textMiddleware.createAudioFile(config);
 
         return res.status(result.statusCode).send(result);
 
     } catch (error) {
-        console.log(error);
         return res.status(500).send(error);
     }
 }
@@ -177,7 +176,6 @@ const postTsv = async (req, res, next) => {
         return res.status(answer.statusCode).send(answer);
 
     } catch (error) {
-        console.log(error);
         return res.status(500).send(error);
     }
 };

@@ -5,6 +5,8 @@ describe('server.get', () => {
         try{
             let app = server.get();
             expect(app).not.toEqual(undefined);
+            expect(app.config).not.toEqual(undefined);
+            expect(app.config.port).toEqual("3005");
             done();
         } catch (err){
             done(err);

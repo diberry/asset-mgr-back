@@ -1,23 +1,32 @@
-const fs = require("fs").promises,
-    removeMd = require('remove-markdown'),
+const removeMd = require('remove-markdown'),
     uuid = require('uuid/v4'),
+    path = require('path'),
     detect = require('detect-csv');
 
+
 const tts = require('./tts.js'),
+    files = require('./files.js'),
     translator = require('./translate.js');
+
+
 
 const processText = async (options) => {
 
+    // TBD - add rate limit
     return await tts.mp3(options);
 }
-const saveFileAndReadFile = async (rootDir, id, file) => {
+const saveFileAndReadFile = async (rootDir, processingDir, id, file) => {
 
     try {
-        let uploadPath = path.join(rootDir, `/uploads/${id}-${file.name}`);
+
+        if(!rootDir || !processingDir || !id || !file) throw ("text.js::saveFileAndReadFile, missing parameters");
+
+        // move uploaded file to this new path with new filename
+        let uploadPath = path.join(rootDir, `./${processingDir}/${id}-${file.name}`);
 
         await file.mv(uploadPath);
 
-        let fileText = await fs.readFile(uploadPath, "utf-8");
+        let fileText = await files.readFile(uploadPath, "utf-8");
         if (!fileText || fileText.length === 0) {
             answer.read = {
                 status: "failed",
@@ -162,8 +171,6 @@ const processManyRequestsFromJson = async(config) =>{
         let answer = createResponseObject(config);
         answer.results = [];
 
-        let arrayOfPromises = [];
-
         let jsonArray = config.body["json-array"];
 
         for (const item of jsonArray) {
@@ -172,12 +179,13 @@ const processManyRequestsFromJson = async(config) =>{
             if ((typeof item) == "string") {
                 config.body.text = item;
                 let thisConfig = Object.assign({}, config, {});
-                arrayOfPromises.push(createAudioFile(thisConfig));
+
+
+                // make this sync on purpose - due to tps of search service
+                answer.results.push(await createAudioFile(thisConfig));
             }
         }
 
-        let answers = await Promise.all(arrayOfPromises);
-        answer.results = answers;
         answer.statusCode = 200;
         return answer;
 
@@ -196,7 +204,7 @@ const processManyRequestsFromTsvFile = async(config) =>{
 
     let resultsArr = [];
 
-    config.body.text = await saveFileAndReadFile(config.rootDir, answer.id, config.body.file);
+    config.body.text = await saveFileAndReadFile(config.rootDir, config.upload.processingDir, answer.id, config.body.file);
     let jsonObj = tsvToJson(config.body.text);
     const cleanOptions = {
         stripListLeaders: true, // strip list leaders (default: true)
@@ -217,31 +225,31 @@ const processManyRequestsFromTsvFile = async(config) =>{
       config.body.type = "arrayOfStrings";
       config.body.textArray= arrayOfTextStrings;                     
 
-      let arrayOfPromises = [];
-
-      for (const item of arrayOfTextStrings) {
-
-        if ((typeof item) == "string") {
-            config.body.text = item;
-            let thisConfig = Object.assign({}, config, {});
-            arrayOfPromises.push(createAudioFile(thisConfig));
-
-        }
-      }
-
-      let answers = await Promise.all(arrayOfPromises)
-      answer.results = answers;
-      answer.statusCode = 200;
-      return answer;
+      return await processArrayOfText(answer, config, config.body.textArray);
 
     }catch(error){
-        console.log(error);
         return {
             statusCode:  500,
             downloadURI:  undefined,
             globalerror:  error
         };        
     }
+}
+const processArrayOfText = async (answer, config, arrayOfText)=>{
+    answer.results  = [];
+
+    for (const item of arrayOfText) {
+
+      if ((typeof item) == "string") {
+          config.body.text = item;
+          let thisConfig = Object.assign({}, config, {});
+          answer.results.push(await createAudioFile(thisConfig));
+
+      }
+    }
+
+    answer.statusCode = 200;
+    return answer;
 }
 const createAudioFile = async (config) =>{
     try{
@@ -276,11 +284,12 @@ const createAudioFile = async (config) =>{
         return Object.assign({}, config.answer, {});;
   
     } catch(err){
-        console.log(err);
         return {
-            statusCode:  500,
+            statusCode:  err.response.statusCode,
+            statusMessage: err.response.statusMessage,
+            test: err.options.body,
             downloadURI:  undefined,
-            globalerror:  error
+            globalerror:  err.stack
         };
     }
 
@@ -323,5 +332,6 @@ module.exports = {
     createAudioFile:createAudioFile,
     processManyRequestsFromJson:processManyRequestsFromJson,
     processManyRequestsFromTsvFile:processManyRequestsFromTsvFile,
-    translate:translate
+    translate:translate,
+    processArrayOfText: processArrayOfText
 };

@@ -10,3 +10,7 @@ current file name is guid + ".mp3"
 
 feature flipping
 https://www.npmjs.com/package/fflip
+
+
+
+https://www.zeolearn.com/magazine/background-processing-in-node-js

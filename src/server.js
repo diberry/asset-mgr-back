@@ -4,6 +4,7 @@ const express = require('express'),
   path = require("path"),
   cors = require('cors'),
   winston = require('winston'),
+  timeout = require('connect-timeout'),
   expressWinston = require('express-winston');
 
 
@@ -25,6 +26,7 @@ const setupApp = (app, config) => {
   app.use(compress());
   app.use(cors());
   app.use(express.json());
+  app.use(timeout(900000));
   app.use(fileUpload({
     limits: { fileSize: 50 * 1024 * 1024 },
     useTempFiles: true,

@@ -1,9 +1,27 @@
-const rp = require('request-promise');
-const fs = require('fs');
+const rp = require("requestretry"),
+    fs = require('fs');
+ 
+
+// time delay between requests
+const delayMS = 500;
+
+// retry recount
+const retry = 5;
+
+// retry request if error or 429 received
+var retryStrategy = function (err, response, body) {
+    let shouldRetry = err || (response.statusCode === 429);
+    if (shouldRetry) {
+        let i = 0;
+    }
+    return shouldRetry;
+  }
 
 // Gets an access token.
 const getAccessToken = async (region, subscriptionKey) => {
-    try{
+
+    if(!region || !subscriptionKey) throw ("TTS getAccessToken missing params");
+
         let options = {
             method: 'POST',
             uri: `https://${region}.api.cognitive.microsoft.com/sts/v1.0/issueToken`,
@@ -12,9 +30,6 @@ const getAccessToken = async (region, subscriptionKey) => {
             }
         }
         return rp(options);
-    } catch(err){
-        throw err;
-    }
 
 }
 // https://docs.microsoft.com/en-us/azure/cognitive-services/speech-service/language-support
@@ -54,7 +69,7 @@ const getVoice = (voice) => {
 // https://docs.microsoft.com/azure/cognitive-services/speech-service/language-support#text-to-speech
 const textToSpeech = async (accessToken,  filenameandpath, region,  text, voice)=> {
 
-    try{
+        if (!accessToken || !filenameandpath || !region || !text) throw ("TTS textToSpeech missing params");
 
         let selectedVoice = getVoice(voice);
 
@@ -64,7 +79,7 @@ const textToSpeech = async (accessToken,  filenameandpath, region,  text, voice)
         let options = {
             "method": "POST",
             "baseUrl": `https://${region}.tts.speech.microsoft.com/`,
-            "url": "cognitiveservices/v1",
+            "url": "/cognitiveservices/v1",
             "headers": {
                 "Authorization": "Bearer " + accessToken,
                 "cache-control": "no-cache",
@@ -72,7 +87,11 @@ const textToSpeech = async (accessToken,  filenameandpath, region,  text, voice)
                 "X-Microsoft-OutputFormat": "audio-24khz-48kbitrate-mono-mp3",
                 "Content-Type": "application/ssml+xml"
             },
-            body: body
+            //timeout: 120000,
+            body: body,
+            maxAttempts: retry,
+            retryDelay: delayMS,
+            retryStrategy: retryStrategy
         }
         
         // request has binary audio file
@@ -80,89 +99,107 @@ const textToSpeech = async (accessToken,  filenameandpath, region,  text, voice)
         .on('response', (response) => {
             if (response.statusCode === 200) {
                 request.pipe(fs.createWriteStream(filenameandpath));
-            } 
-        });
+            } else {
+                return {
+                    file: filenameandpath,
+                    text: text,
+                    statusCode: response.statusCode,
+                    statusMessage: response.statusMessage
+                };
+            }
+        })
+        .on('error', function(err) {
+            return {
+                file: filenameandpath,
+                text: text,
+                statusCode: response.statusCode,
+                err: err
+            };
+          })
         return request;
-
-    } catch(err){
-        throw(err);
-    }
 }
 
 
 // Use async and await to get the token before attempting
 // to convert text to speech.
-const mp3 = async function(options) {
+const mp3 = async function(options, textArray) {
 
-    let answer = {};
-    answer.text = options.text;
-    answer.options = options;
-    answer.error = [];
-    answer.result = {};
 
-    if (!answer.options) {
-        answer.error.push('options is empty.');
-    } else {
-        if (!answer.options.key) {
-            answer.error.push('options.key is empty.');
-        };
-    
-        if (!answer.options.region) {
-            answer.error.push('options.region is empty.');
-        };
 
-        if(!answer.options.id){
-            answer.error.push('options.id is empty.');
-        }
+        if (!options) throw "Param is empty: options";
+        if (!options.text) throw "Param is empty: options.text";
 
-        if(!answer.options.fileExtension){
-            answer.error.push('options.fileExtension is empty.');
-        }
+        let answer = {};
+        answer.text = options.text;
+        answer.options = Object.assign({}, options, {});
+        answer.error = [];
+        answer.result = {};
 
-        if(!answer.options.path){
-            answer.error.push('options.path is empty.');
+        if (!answer.options) {
+            answer.error.push('options is empty.');
         } else {
-            if ((answer.options.path.indexOf("/")!=-1) && (answer.options.path[answer.options.path.length] != "/")){
-                answer.options.path += "/";
-            } else if ((answer.options.path.indexOf("\\")!=-1) && (answer.options.path[answer.options.path.length] != "\\")){
-                answer.options.path += "\\";
-            } else {
-                //noop
-            }
-        }
-        // path and file name
-        answer.options.path += answer.options.id + answer.options.fileExtension;
+            if (!answer.options.key) {
+                answer.error.push('options.key is empty.');
+            };
         
-    };
+            if (!answer.options.region) {
+                answer.error.push('options.region is empty.');
+            };
 
-    if (!answer.text) {
-        answer.error.push('text is not set.');
-    };
+            if(!answer.options.id){
+                answer.error.push('options.id is empty.');
+            }
 
-    if (answer.text.length>1000){
-        answer.error.push('text is too large (1k char max');
-    }
+            if(!answer.options.fileExtension){
+                answer.error.push('options.fileExtension is empty.');
+            }
 
-    if(answer.error.length>0){
-        answer.result["success"]=false;
-        return answer;
-    } 
+            if(!answer.options.path){
+                answer.error.push('options.path is empty.');
+            } else {
+                if ((answer.options.path.indexOf("/")!=-1) && (answer.options.path[answer.options.path.length] != "/")){
+                    answer.options.path += "/";
+                } else if ((answer.options.path.indexOf("\\")!=-1) && (answer.options.path[answer.options.path.length] != "\\")){
+                    answer.options.path += "\\";
+                } else {
+                    //noop
+                }
+            }
+            // path and file name
+            answer.options.path += answer.options.id + answer.options.fileExtension;
+            
+        };
 
-    try {
-        // get token
-        options.accessToken = await getAccessToken(answer.options.region, answer.options.key);
+        if (!answer.text) {
+            answer.error.push('text is not set.');
+        };
+
+        if (answer.text.length>1000){
+            answer.error.push('text is too large (1k char max');
+        }
+
+        if(answer.error.length>0){
+            answer.result["success"]=false;
+            return answer;
+        } 
+
+        // get token - access token is good for 9 minutes
+        let response = await getAccessToken(answer.options.region, answer.options.key);
+
+        if (response && response.body) {
+            options.accessToken = response.body;
+        } else {
+            options.accessToken = response;
+        }
 
         // get binary - tts
-        answer.result["binary"] = await textToSpeech(answer.options.accessToken,answer.options.path,answer.options.region, answer.options.text, answer.options.voice);
+        answer.result["binary"] = await textToSpeech(options.accessToken,answer.options.path,answer.options.region, answer.options.text, answer.options.voice);
         
         answer.result["success"]=true;
         answer.result["file"]=answer.options.path;
         
-    } catch (err) {
-        answer.error.push(JSON.stringify(err))
-    } finally {
         return answer;
-    }
+
 }
 
 module.exports = {

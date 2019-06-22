@@ -15,12 +15,20 @@ const getConfigTest = () => {
             port: process.env.DFBAPIDOWNLOADSERVERPORT,
             dir: path.join(fixTestRoot, process.env.DFBAPIDOWNLOADSERVERDIR)
         },
+        upload: {
+            uploadDir: "tmp",
+            processingDir: "uploads"
+        },
         ttsService: {
             region: process.env.SPEECHREGION,
             key: process.env.SPEECHKEY
         },
         translator: {
             key: process.env.TRANSLATORKEY
+        },
+        body: {
+            text: null,
+            file: null
         },
         logger: {
             routerLogger:{
@@ -60,7 +68,10 @@ const getConfigTest = () => {
 
 const getConfig = () => {
 
-    let fixTestRoot = path.join(__dirname,"./");
+    const srcDir = "./";
+    const rootDir = "../";
+
+    let fixTestRoot = path.join(__dirname,srcDir);
 
     let my_config = {
         port: process.env.DFBAPISERVERPORT,
@@ -71,6 +82,13 @@ const getConfig = () => {
             port: process.env.DFBAPIDOWNLOADSERVERPORT,
             dir: path.join(fixTestRoot, process.env.DFBAPIDOWNLOADSERVERDIR)
         },
+        upload: {
+            dir: path.join(fixTestRoot, process.env.DFBAPIUPLOADSERVERDIR) 
+        },     
+        upload: {
+            uploadDir: "tmp",
+            processingDir: "uploads"
+        },           
         ttsService: {
             region: process.env.SPEECHREGION,
             key: process.env.SPEECHKEY

@@ -30,7 +30,6 @@ const translate = async (config) =>{
             json: true,
             useQuerystring: true
         }
-        console.log(JSON.stringify(options));
 
         return await rp(options);
 
