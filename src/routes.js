@@ -1,6 +1,7 @@
 const path = require("path");
 
 const textMiddleware = require('./text.js');
+const voices = require('./voices.js');
 
 const setupRouterLogger = (app) => {
     app.use(expressWinston.logger(app.config.logger.routerLogger.winston));
@@ -43,10 +44,7 @@ const getConfig = async (req, res, next) => {
     let answer = textMiddleware.createResponseObject(req.app.config);
     answer.route = "/config";
     answer["config"] = {
-        "voices": [
-            { locale: "en-us", gender: "female", voice: "Jessa", code: "Jessa24KRUS" },
-            { locale: "en-us", gender: "male", voice: "Benjamin", code: "BenjaminRUS" }
-        ]
+        "voices": voices
     };
     return res.status(200).send(answer);
 }
@@ -54,20 +52,13 @@ const getConfigSpeech = async (req, res, next) => {
     let answer = textMiddleware.createResponseObject(req.app.config);
     answer.route = "/config/speech";
     answer["config"] = {
-        "voices": [
-            { locale: "en-us", gender: "female", voice: "Jessa", code: "Jessa24KRUS" },
-            { locale: "en-us", gender: "male", voice: "Benjamin", code: "BenjaminRUS" }
-        ]
+        "voices": voices
     };
     return res.status(200).send(answer);
 }
 const getDownloadMp3 = (req, res, next) => {
-    try {
-        res.download(path.join(req.app.config.rootDir, `${req.app.config.download.dir}/${req.params.id}`));
-    } catch (err) {
-        // don't show full error
-        return res.status(400).send("file not found");
-    }
+    res.download(`${req.app.config.download.dir}/${req.params.id}`);
+
 }
 const postMp3 = async (req, res, next) => {
 

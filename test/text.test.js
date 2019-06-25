@@ -112,12 +112,11 @@ describe('text fns', () => {
             let testConfig = config.getConfigTest();
             const answer = text.createResponseObject(config);
 
-            const fileName = "kb.tsv";
-            const tsvfilePath = path.join(testConfig.rootDir, `/data/${fileName}`);
-            const tsvTestFilePath = path.join(testConfig.rootDir, `/tmp/${fileName}`);
+            const fileName = "./data/old-mp3/01c15845-a6b4-4b68-8614-5b45f3d4eb36.mp3";
+            const mp3FileName = path.join(testConfig.rootDir,fileName);
 
             // copy file
-            await fs.copyFile(tsvfilePath,tsvTestFilePath);
+            await fs.copyFile(mp3FileName,tsvTestFilePath);
 
             const mockBuffer = await fs.readFile(tsvTestFilePath);
             const stats = await fs.stat(tsvTestFilePath);

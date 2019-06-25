@@ -1,6 +1,11 @@
-const request = require('supertest');
+const request = require('supertest'),
+    fs = require("fs").promises;
+
+
 const config = require("../src/config.js");
 const server = require("../src/server.js");
+const string = require("../src/strings.js");
+
 
 
 
@@ -139,6 +144,38 @@ describe('routes', () => {
         }
 
     });
+    it('should call /download/:id route with valid id', async(done)=>{
+
+        try{
+            jest.setTimeout(25000);
+            const fileName = "01c15845-a6b4-4b68-8614-5b45f3d4eb36.mp3";
+            let testConfig = config.getConfigTest();
+            let app = server.get(testConfig);
+
+
+            //const newFileName = string.dateAsTimestamp();
+            const originPath = path.join(testConfig.rootDir, `/data/old-mp3/${fileName}`);
+            const destinationPath = path.join(testConfig.rootDir, `/out/${fileName}`);
+
+            // copy file
+            await fs.copyFile(originPath,destinationPath);
+
+            request(app)
+            .get(`/download/${fileName}`)
+            .expect(200)
+            .end((err, res)=>{
+                if (err) return done(err);
+    
+                //console.log("res=", res.body);
+    
+                done();
+            });
+
+        } catch(err){
+            done(`err = ${JSON.stringify(err)}`);
+        }
+
+    });    
     it('should call /mp3 route with text on body', async(done)=>{
 
         try{
