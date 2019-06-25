@@ -134,8 +134,6 @@ describe('routes', () => {
             .end((err, res)=>{
                 if (err) return done(err);
     
-                //console.log("res=", res.body);
-    
                 done();
             });
 

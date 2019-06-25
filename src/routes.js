@@ -25,6 +25,34 @@ const setupRoutes = (app) => {
     app.post('/json-array', postJsonArray);
     app.post('/tsv', postTsv);
 
+    app.use(function(err, req, res, next) {
+        if(err.message == "Not Found"){
+            return res.status(404).send("file not found");
+        } else {
+            next(err);
+        }
+    });
+
+    if (app.get('env') === 'development') {
+        app.use(function(err, req, res, next) {
+            res.status(err.status || 500);
+            res.render('error', {
+                message: err.message,
+                error: err
+            });
+        });
+    }
+    
+    // production error handler
+    // no stacktraces leaked to user
+    app.use(function(err, req, res, next) {
+        res.status(err.status || 500);
+        res.render('error', {
+            message: err.message,
+            error: {}
+        });
+    });
+
     setupPipelineLogger(app);
 
 }
@@ -57,8 +85,8 @@ const getConfigSpeech = async (req, res, next) => {
     return res.status(200).send(answer);
 }
 const getDownloadMp3 = (req, res, next) => {
-    res.download(`${req.app.config.download.dir}/${req.params.id}`);
 
+    return res.download(`${req.app.config.download.dir}/${req.params.id}`);
 }
 const postMp3 = async (req, res, next) => {
 

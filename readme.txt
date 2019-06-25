@@ -23,3 +23,5 @@ https://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references#P
 
 batch transcription
 batch text to speech - get private preview from Erik
+
+Add mocks so I'm not hitting live website

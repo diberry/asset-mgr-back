@@ -11,14 +11,6 @@ const express = require('express'),
 const configMiddleware = require('./config.js');
 const routesMiddleware = require('./routes.js');
 
-function errorHandler (err, req, res, next) {
-  //if (res.headersSent) {
-  //  return next(err)
-  //}
-  res.status(500)
-  res.render('error', { error: err })
-}
-
 const setupApp = (app, config) => {
 
   if (config) {
@@ -48,7 +40,6 @@ const get = (config) => {
 
     setupApp(app, config);
     routesMiddleware.setupRoutes(app);
-    app.use(errorHandler);
     return app;
 
   } catch (err) {

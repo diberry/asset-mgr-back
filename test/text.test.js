@@ -108,18 +108,23 @@ describe('text fns', () => {
     
     it('should process TSV file without 4xx', async (done) => {
         try{
+
+            // this may timeout since it is going across the internet - for now
             jest.setTimeout(200000);
             let testConfig = config.getConfigTest();
             const answer = text.createResponseObject(config);
 
-            const fileName = "./data/old-mp3/01c15845-a6b4-4b68-8614-5b45f3d4eb36.mp3";
-            const mp3FileName = path.join(testConfig.rootDir,fileName);
+            const fileName = "kb.tsv";
 
-            // copy file
-            await fs.copyFile(mp3FileName,tsvTestFilePath);
+            const originPath = path.join(testConfig.rootDir,`./data/${fileName}`, );
+            const destinationPath = path.join(testConfig.rootDir,testConfig.upload.processingDir, "kb.tsv");
 
-            const mockBuffer = await fs.readFile(tsvTestFilePath);
-            const stats = await fs.stat(tsvTestFilePath);
+            // copy file to upload directory
+            await fs.copyFile(originPath,destinationPath);
+
+            // create file object
+            const mockBuffer = await fs.readFile(destinationPath);
+            const stats = await fs.stat(destinationPath);
             const file = fileFactory({
                 name: fileName, 
                 data:{
@@ -128,7 +133,7 @@ describe('text fns', () => {
                 },
                 size: stats.size, 
                 encoding:"7bit",
-                tempFilePath: tsvTestFilePath,
+                tempFilePath: destinationPath,
                 truncated:false,
                 mimetype:"text/plain",
                 buffer: mockBuffer,
