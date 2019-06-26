@@ -19,6 +19,7 @@
     "cors": "^2.8.5",
     "detect-csv": "^1.1.0",
     "dotenv": "^8.0.0",
+    "entities": "^1.1.2",
     "express": "^4.16.4",
     "express-fileupload": "^1.1.4",
     "express-winston": "^3.1.0",

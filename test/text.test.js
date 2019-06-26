@@ -14,6 +14,7 @@ describe('text fns', () => {
     it('should clean a kbAsJson array of markdown', async(done)=>{
 
         try{
+            jest.setTimeout(200000);
             const testDataOutputLocation = path.join(__dirname,"../kb.json");
             const savedJsonAsText = await fs.readFile(testDataOutputLocation,"utf-8");
             const kbAsJson = JSON.parse(savedJsonAsText);
@@ -30,10 +31,16 @@ describe('text fns', () => {
             const extraStringsToClean = ['©'];
             const removeEndOfLineMarks = true;
 
-            let cleanedArray = text.cleanAnswers(kbAsJson, options, "Answer",extraStringsToClean,removeEndOfLineMarks);
+            let cleanedArray = await text.cleanAnswersAsync(kbAsJson, options, "Answer",extraStringsToClean,removeEndOfLineMarks);
 
             expect(cleanedArray.length).toEqual(kbAsJson.length);
-            expect(cleanedArray[0].Answer_cleaned).toEqual("With Windows 10,Published: September 2016 ,Version 2.0 , 2016 Microsoft. All rights reserved. ,Microsoft, Microsoft Edge, OneNote, Outlook, PowerPoint, OneDrive, and Windows are registered trademarks of Microsoft Corporation. ,Surface and Skype are trademarks of Microsoft Corporation. ,Bluetooth is a registered trademark of Bluetooth SIG, Inc. ,This document is provided “as-is.” Information in this document, including URL and other Internet website references, may change without notice.");
+            
+
+            //before xml-encoding
+            //expect(cleanedArray[0].Answer_cleaned).toEqual("With Windows 10,Published: September 2016 ,Version 2.0 , 2016 Microsoft. All rights reserved. ,Microsoft, Microsoft Edge, OneNote, Outlook, PowerPoint, OneDrive, and Windows are registered trademarks of Microsoft Corporation. ,Surface and Skype are trademarks of Microsoft Corporation. ,Bluetooth is a registered trademark of Bluetooth SIG, Inc. ,This document is provided “as-is.” Information in this document, including URL and other Internet website references, may change without notice.");
+
+            //expect(answers.results[0].processText.text).toEqual("Movies &amp; TV,Movies &amp; TV brings you the latest movies and TV shows as well as featured hits. It offers recommendations based on what you&#x2019;ve watched, making it easier to find something new that you&#x2019;ll like. Check out Watch TV shows, movies, and videos on Surface.com to get started. ,News brings you the latest breaking stories as well as more in-depth coverage. You can customize the coverage to add more local information or highlight the topics you choose.");
+
             done();
         } catch(err){
             done(`err = ${JSON.stringify(err)}`);
@@ -110,7 +117,7 @@ describe('text fns', () => {
         try{
 
             // this may timeout since it is going across the internet - for now
-            jest.setTimeout(200000);
+            jest.setTimeout(300000);
             let testConfig = config.getConfigTest();
             const answer = text.createResponseObject(config);
 
@@ -148,6 +155,31 @@ describe('text fns', () => {
             expect(answers).not.toEqual(undefined);
             expect(answers.results).not.toEqual(undefined);
             expect(answers.results.length).toEqual(79);
+            done();
+        } catch (err){
+            done(err);
+        }
+    });
+    it('should encode to XML, then convert to mp3 with error', async (done) => {
+        try{
+            jest.setTimeout(200000);
+            
+            // doesn't really do anything
+            let encodedText = await text.xmlEncode("Movies & TV,Movies & TV brings you the latest movies and TV shows as well as featured hits. It offers recommendations based on what you’ve watched, making it easier to find something new that you’ll like. Check out Watch TV shows, movies, and videos on Surface.com to get started. ,News brings you the latest breaking stories as well as more in-depth coverage. You can customize the coverage to add more local information or highlight the topics you choose.");
+
+            let testConfig = config.getConfigTest();
+            const answer = text.createResponseObject(config);
+
+            const textArray = [
+                encodedText
+            ];
+
+            const answers = await text.processArrayOfText(answer, testConfig, textArray);
+
+            expect(answers.statusCode).toEqual(200);
+            expect(answers.results[0].downloadURI).not.toEqual(undefined);
+            expect(answers.results[0].processText.text).toEqual("Movies &amp; TV,Movies &amp; TV brings you the latest movies and TV shows as well as featured hits. It offers recommendations based on what you&#x2019;ve watched, making it easier to find something new that you&#x2019;ll like. Check out Watch TV shows, movies, and videos on Surface.com to get started. ,News brings you the latest breaking stories as well as more in-depth coverage. You can customize the coverage to add more local information or highlight the topics you choose.");
+
             done();
         } catch (err){
             done(err);

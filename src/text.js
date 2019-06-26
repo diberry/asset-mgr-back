@@ -1,6 +1,7 @@
 const removeMd = require('remove-markdown'),
     uuid = require('uuid/v4'),
     path = require('path'),
+    entities = require('entities'),
     detect = require('detect-csv');
 
 
@@ -9,6 +10,10 @@ const tts = require('./tts.js'),
     translator = require('./translate.js');
 
 
+// assume text isn't already encoded
+const xmlEncode = async(text)=>{
+    return await entities.encodeXML(text);
+}
 
 const processText = async (options) => {
 
@@ -111,46 +116,60 @@ const tsvToJson = (datas) => {
         throw err;
     }
 }
+
+// return cleaned text
+const clean = async (text, extraStringsToClean, removeEndOfLineMarks, options) => {
+
+    if(!text) return "";
+
+    let originString = text;
+
+    // remove end of line marks
+    if(removeEndOfLineMarks) {
+
+        const reg1 = new RegExp( /\\n/g );
+        originString = text.replace(reg1, ",");
+
+        //const reg2 = new RegExp( /\n/g );
+        //originString = originString.replace(reg2, "");
+    }
+
+    // remove markdown
+    let cleanedString = removeMd(originString,options);
+
+    // remove other marks
+    cleanedString = removeStrings(cleanedString,extraStringsToClean);
+
+    // replace double commas to single comma
+    const commaReg = new RegExp(/([,]{2,})/g);
+    if(cleanedString.indexOf(",,")) cleanedString = cleanedString.replace(commaReg, ","); 
+
+    // encode non-xml - which screws up speech service
+    cleanedString = await xmlEncode(cleanedString);
+
+    return cleanedString;
+
+}
+
 /**
  * 
  * @param {*} kbAsJson - array of JSON objects
  * @param {pathInJsonToClean} string - used as `arrayItem[pathInJsonToClean]`
  * @returns array of new property, `cleanedAnswer`
  */
-const cleanAnswers = (kbAsJson,options,pathInJsonToClean,extraStringsToClean, removeEndOfLineMarks)=>{
+const cleanAnswersAsync = async (kbAsJson,options,pathInJsonToClean,extraStringsToClean, removeEndOfLineMarks)=>{
     
     if (!kbAsJson || (!(kbAsJson instanceof Array)) || (kbAsJson.length===0)) return [];
 
-    kbAsJson.forEach((kb,index,arr)=>{
+    for (const kb of kbAsJson) {
 
-        if(kb && kb[pathInJsonToClean]){
-
-            let originString = kb[pathInJsonToClean];
-
-            // remove end of line marks
-            if(removeEndOfLineMarks) {
-
-                const reg1 = new RegExp( /\\n/g );
-                originString = originString.replace(reg1, ",");
-
-                //const reg2 = new RegExp( /\n/g );
-                //originString = originString.replace(reg2, "");
-            }
-
-            // remove markdown
-            let cleanedString = removeMd(originString,options);
-
-            // remove other marks
-            cleanedString = removeStrings(cleanedString,extraStringsToClean);
-
-            // replace double commas to single comma
-            const commaReg = new RegExp(/([,]{2,})/g);
-            if(cleanedString.indexOf(",,")) cleanedString = cleanedString.replace(commaReg, ","); 
-
-            kb[pathInJsonToClean + "_cleaned"] = cleanedString;
-
+        if(kb[pathInJsonToClean]){
+            kb[pathInJsonToClean + "_cleaned"] = await clean(kb[pathInJsonToClean], extraStringsToClean, removeEndOfLineMarks, options);
+            kb["cleaned"]=true;
+        } else {
+            kb["cleaned"]=false;
         }
-    }); 
+    }; 
 
     return kbAsJson;
 }
@@ -199,33 +218,33 @@ const processManyRequestsFromJson = async(config) =>{
 }
 const processManyRequestsFromTsvFile = async(config) =>{
     try{
-    let answer = createResponseObject(config);
-    answer.results = [];
+        let answer = createResponseObject(config);
+        answer.results = [];
 
-    let resultsArr = [];
+        let resultsArr = [];
 
-    config.body.text = await saveFileAndReadFile(config.rootDir, config.upload.processingDir, answer.id, config.body.file);
-    let jsonObj = tsvToJson(config.body.text);
-    const cleanOptions = {
-        stripListLeaders: true, // strip list leaders (default: true)
-        listUnicodeChar: '',     // char to insert instead of stripped list leaders (default: '')
-        gfm: true,                // support GitHub-Flavored Markdown (default: true)
-        useImgAltText: true      // replace images with alt-text, if present (default: true)
-      };
-      const extraStringsToClean = ['©'];
-      const removeEndOfLineMarks = true;
+        config.body.text = await saveFileAndReadFile(config.rootDir, config.upload.processingDir, answer.id, config.body.file);
+        let jsonObj = tsvToJson(config.body.text);
+        const cleanOptions = {
+            stripListLeaders: true, // strip list leaders (default: true)
+            listUnicodeChar: '',     // char to insert instead of stripped list leaders (default: '')
+            gfm: true,                // support GitHub-Flavored Markdown (default: true)
+            useImgAltText: true      // replace images with alt-text, if present (default: true)
+        };
+        const extraStringsToClean = ['©'];
+        const removeEndOfLineMarks = true;
 
-      // assumes QnA Maker KB only
-      let cleanedJsonObject = cleanAnswers(jsonObj, cleanOptions, "Answer", extraStringsToClean, removeEndOfLineMarks);
+        // assumes QnA Maker KB only
+        let cleanedJsonObject = await cleanAnswersAsync(jsonObj, cleanOptions, "Answer", extraStringsToClean, removeEndOfLineMarks);
 
-      // reduce array to only answers
-      let arrayOfTextStrings = cleanedJsonObject.map(item => {
-        return item.Answer_cleaned;
-      });
-      config.body.type = "arrayOfStrings";
-      config.body.textArray= arrayOfTextStrings;                     
+        // reduce array to only answers
+        let arrayOfTextStrings = cleanedJsonObject.map(item => {
+            return item.Answer_cleaned;
+        });
+        config.body.type = "arrayOfStrings";
+        config.body.textArray= arrayOfTextStrings;                     
 
-      return await processArrayOfText(answer, config, config.body.textArray);
+        return await processArrayOfText(answer, config, config.body.textArray);
 
     }catch(error){
         return {
@@ -327,11 +346,12 @@ module.exports = {
     tsvToJson: tsvToJson,
     processText: processText,
     saveFileAndReadFile: saveFileAndReadFile,
-    cleanAnswers: cleanAnswers,
+    cleanAnswersAsync: cleanAnswersAsync,
     createResponseObject:createResponseObject,
     createAudioFile:createAudioFile,
     processManyRequestsFromJson:processManyRequestsFromJson,
     processManyRequestsFromTsvFile:processManyRequestsFromTsvFile,
     translate:translate,
-    processArrayOfText: processArrayOfText
+    processArrayOfText: processArrayOfText,
+    xmlEncode: xmlEncode
 };
