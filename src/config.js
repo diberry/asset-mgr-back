@@ -4,7 +4,8 @@ const winston = require('winston');
 
 const getConfigTest = () => {
 
-    let fixTestRoot = path.join(__dirname,"../"); 
+    let fixTestRoot = path.join(__dirname,"../");
+    console.log(`fixTestRoot = ${fixTestRoot}`); 
 
     let my_config = {
         port: process.env.DFBAPISERVERPORT,
@@ -68,10 +69,13 @@ const getConfigTest = () => {
 
 const getConfig = () => {
 
-    const srcDir = "./";
+    //const srcDir = "./";
     const rootDir = "../";
 
-    let fixTestRoot = path.join(__dirname,srcDir);
+
+    let fixTestRoot = path.join(__dirname,rootDir);
+
+    console.log(`fixTestRoot = ${fixTestRoot}`); 
 
     let my_config = {
         port: process.env.DFBAPISERVERPORT,

@@ -24,40 +24,32 @@ const setupRoutes = (app) => {
     app.post('/upload', postUploadTextFile);
     app.post('/json-array', postJsonArray);
     app.post('/tsv', postTsv);
-
-    app.use(function(err, req, res, next) {
-        if(err.message == "Not Found"){
-            return res.status(404).send("file not found");
-        } else {
-            next(err);
-        }
-    });
-
+ 
     if (app.get('env') === 'development') {
         app.use(function(err, req, res, next) {
-            res.status(err.status || 500);
-            res.render('error', {
-                message: err.message,
-                error: err
-            });
+            if(err.message == "Not Found" || err.statusCode == 404){
+                 return res.status(404).send("file not found");
+            } else {
+                res.status(err.statusCode || 500).send(err);
+            }
         });
     }
     
     // production error handler
     // no stacktraces leaked to user
     app.use(function(err, req, res, next) {
-        res.status(err.status || 500);
-        res.render('error', {
-            message: err.message,
-            error: {}
-        });
+        if(err.message == "Not Found" || err.statusCode == 404){
+            return res.status(404).send("file not found");
+       } else {
+        res.status(500).send('Something broke!');
+       }        
     });
 
     setupPipelineLogger(app);
 
 }
 const getError = (req, res, next) => {
-    return next(new Error("This is an error and it should be logged to the console"));
+    next(new Error("This is an error and it should be logged to the console"));
 }
 const getRoot = (req, res) => {
     return res.send('Text to speech');
@@ -90,113 +82,94 @@ const getDownloadMp3 = (req, res, next) => {
 }
 const postMp3 = async (req, res, next) => {
 
-    try {
+    if (!req.app.config) throw "mp3 route - app not configured";
 
-        if (!req.app.config) throw "mp3 route - app not configured";
-
-        if (!req || !req.body || !req.body.rawtext || req.body.rawtext.length === 0) {
-            let answer = textMiddleware.createResponseObject(req.app.config);
-            answer.route = "mp3";
-            answer.statusCode = 400,
-                answer.error = "empty params";
-            return res.status(answer.statusCode).send(answer);
-        }
-
-        let config = req.app.config;
-        config.body = req.body;
-        config.route = "mp3";
-        config.body.text = config.body.rawtext;
-
-        let answer = await textMiddleware.createAudioFile(config);
-
+    if (!req || !req.body || !req.body.rawtext || req.body.rawtext.length === 0) {
+        let answer = textMiddleware.createResponseObject(req.app.config);
+        answer.route = "mp3";
+        answer.statusCode = 400,
+        answer.error = "empty params";
         return res.status(answer.statusCode).send(answer);
-
-    } catch (error) {
-        return res.status(500).send(error);
     }
+
+    let config = req.app.config;
+    config.body = req.body;
+    config.route = "mp3";
+    config.body.text = config.body.rawtext;
+
+    let answer = await textMiddleware.createAudioFile(config);
+
+    return res.status(answer.statusCode).send(answer);
 }
 const postUploadTextFile = async (req, res, next) => {
 
-    try {
 
-        if (!req.app.config) throw "upload route - app not configured";
-        let answer = textMiddleware.createResponseObject(req.app.config);
 
-        if (!req.files || (Object.keys(req.files).length == 0) || !req.files.fileToConvert) {
+    if (!req.app.config) throw "upload route - app not configured";
+    let answer = textMiddleware.createResponseObject(req.app.config);
 
-            answer.route = "upload";
-            answer.statusCode = 400,
-                answer.error = "empty params";
-            return res.status(answer.statusCode).send(answer);
-        }
+    if (!req.files || (Object.keys(req.files).length == 0) || !req.files.fileToConvert) {
 
-        let file = req.files.fileToConvert;
-
-        let config = req.app.config;
-        config.answer = answer;
-        config.route = "upload";
-        config.body = req.body;
-        config.body.file = file;
-        config.body.text = await textMiddleware.saveFileAndReadFile(config.rootDir,  config.upload.processingDir, config.answer.id, config.body.file);
-        let result = await textMiddleware.createAudioFile(config);
-
-        return res.status(result.statusCode).send(result);
-
-    } catch (error) {
-        return res.status(500).send(error);
+        answer.route = "upload";
+        answer.statusCode = 400,
+            answer.error = "empty params";
+        return res.status(answer.statusCode).send(answer);
     }
+
+    let file = req.files.fileToConvert;
+
+    let config = req.app.config;
+    config.answer = answer;
+    config.route = "upload";
+    config.body = req.body;
+    config.body.file = file;
+    config.body.text = await textMiddleware.saveFileAndReadFile(config.rootDir,  config.upload.processingDir, config.answer.id, config.body.file);
+    let result = await textMiddleware.createAudioFile(config);
+
+    return res.status(result.statusCode).send(result);
+
+
 }
 const postJsonArray = async (req, res, next) => {
 
-    try {
-
-        if (!req || !req.body || !req.body["json-array"] || req.body["json-array"].constructor.name != "Array") {
-            let answer = textMiddleware.createResponseObject(req.app.config);
-            answer.route = "json-array";
-            answer.statusCode = 400,
-                answer.error = "empty params";
-            return res.status(answer.statusCode).send(answer);
-        }
-
-        let config = req.app.config;
-        config.body = req.body;
-        config.route = "json-array";
-        let answer = await textMiddleware.processManyRequestsFromJson(config);
-
+    if (!req || !req.body || !req.body["json-array"] || req.body["json-array"].constructor.name != "Array") {
+        let answer = textMiddleware.createResponseObject(req.app.config);
+        answer.route = "json-array";
+        answer.statusCode = 400,
+            answer.error = "empty params";
         return res.status(answer.statusCode).send(answer);
-
-
-    } catch (error) {
-        return res.status(500).send(error);
     }
+
+    let config = req.app.config;
+    config.body = req.body;
+    config.route = "json-array";
+    let answer = await textMiddleware.processManyRequestsFromJson(config);
+
+    return res.status(answer.statusCode).send(answer);
+
 }
 const postTsv = async (req, res, next) => {
 
-    try {
-
-        if (!req.files || (Object.keys(req.files).length == 0) || !req.files.fileToConvert) {
-            let answer = textMiddleware.createResponseObject(req.app.config);
-            answer.route = "tsv";
-            answer.statusCode = 400,
-                answer.error = "empty params";
-            return res.status(answer.statusCode).send(answer);
-        }
-
-
-        let file = req.files.fileToConvert;
-
-        let config = req.app.config;
-        config.body = req.body;
-        config.body.file = file;
-        config.route = "tsv";
-
-        let answer = await textMiddleware.processManyRequestsFromTsvFile(config);
-
+    if (!req.files || (Object.keys(req.files).length == 0) || !req.files.fileToConvert) {
+        let answer = textMiddleware.createResponseObject(req.app.config);
+        answer.route = "tsv";
+        answer.statusCode = 400,
+            answer.error = "empty params";
         return res.status(answer.statusCode).send(answer);
-
-    } catch (error) {
-        return res.status(500).send(error);
     }
+
+
+    let file = req.files.fileToConvert;
+
+    let config = req.app.config;
+    config.body = req.body;
+    config.body.file = file;
+    config.route = "tsv";
+
+    let answer = await textMiddleware.processManyRequestsFromTsvFile(config);
+
+    return res.status(answer.statusCode).send(answer);
+
 };
 
 module.exports = {

@@ -95,10 +95,25 @@ const textToSpeech = async (accessToken,  filenameandpath, region,  text, voice)
         }
         
         // request has binary audio file
-        let request = rp(options)
+        let request = await rp(options)
         .on('response', (response) => {
             if (response.statusCode === 200) {
-                request.pipe(fs.createWriteStream(filenameandpath));
+                //request.pipe(await fs.createWriteStream(filenameandpath));
+                // This opens up the writeable stream to `output`
+                var writeStream = fs.createWriteStream(filenameandpath);
+
+                // This pipes the POST data to the file
+                response.pipe(writeStream);
+
+                // After all the data is saved, respond with a simple html form so they can post more data
+                response.on('end', function () {
+                    //console.log("done with writeStream");
+                });
+
+                // This is here incase any errors occur
+                writeStream.on('error', function (err) {
+                    //console.log(`err with writeStream - ${err}`);
+                });
             } else {
                 return {
                     file: filenameandpath,
@@ -112,7 +127,7 @@ const textToSpeech = async (accessToken,  filenameandpath, region,  text, voice)
             return {
                 file: filenameandpath,
                 text: text,
-                statusCode: response.statusCode,
+                statusCode: err.statusCode,
                 err: err
             };
           })

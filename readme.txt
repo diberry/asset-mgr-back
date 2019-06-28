@@ -21,4 +21,4 @@ batch text to speech - get private preview from Erik
 
 Add mocks so I'm not hitting live website
 
-figure out which looping is sync and async
+P0 - figure out which looping is sync and async

@@ -16,6 +16,7 @@ const setupApp = (app, config) => {
   if (config) {
     app.config = config;
   } else {
+    console.log(configMiddleware.getConfig());
     app.config = configMiddleware.getConfig();
   }
   app.use(compress());
@@ -40,6 +41,7 @@ const get = (config) => {
 
     setupApp(app, config);
     routesMiddleware.setupRoutes(app);
+    console.log(`environment: ${app.get('env')}`);
     return app;
 
   } catch (err) {
@@ -51,7 +53,7 @@ const start = (app) => {
   //https://www.codementor.io/knownasilya/testing-express-apis-with-supertest-du107mcv2
 
   app.listen(app.config.port, () => {
-    //console.log(`Server running on: ${app.config.port}, root at ${app.config.rootDir}`);
+    console.log(`Server running on: ${app.config.port}`);
   });
 }
 
