@@ -7,3 +7,4 @@ coverage
 tmp
 coverage
 .env
+.env.prod
