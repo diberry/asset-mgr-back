@@ -16,6 +16,10 @@ const getConfigTest = () => {
             port: process.env.DFBAPIDOWNLOADSERVERPORT,
             dir: path.join(fixTestRoot, process.env.DFBAPIDOWNLOADSERVERDIR)
         },
+        azstorage:{
+            connectionString:process.env.AZSTORAGECONNECTIONSTRING,
+            container: process.env.AZSTORAGECONTAINER 
+        },
         upload: {
             uploadDir: "tmp",
             processingDir: "uploads"
@@ -86,6 +90,10 @@ const getConfig = () => {
             port: process.env.DFBAPIDOWNLOADSERVERPORT,
             dir: path.join(fixTestRoot, process.env.DFBAPIDOWNLOADSERVERDIR)
         },
+        azstorage:{
+            connectionString:process.env.AZSTORAGECONNECTIONSTRING,
+            container: process.env.AZSTORAGECONTAINER 
+        },        
         upload: {
             dir: path.join(fixTestRoot, process.env.DFBAPIUPLOADSERVERDIR) 
         },     

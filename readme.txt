@@ -22,3 +22,5 @@ batch text to speech - get private preview from Erik
 Add mocks so I'm not hitting live website
 
 P0 - figure out which looping is sync and async
+
+download stream example - https://medium.com/@richard534/uploading-streaming-audio-using-nodejs-express-mongodb-gridfs-b031a0bcb20f
