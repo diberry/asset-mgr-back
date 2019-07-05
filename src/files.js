@@ -1,6 +1,7 @@
 const fse = require('fs-extra');
 const fs = require("fs");
 const path = require('path');
+const storage = require('./az-storage.js');
 
 const createWriteStream = async (fileNameWithFullPath) => {
 
@@ -50,9 +51,39 @@ const readFile = async (fileNameWithFullPath, format="utf-8")=>{
         throw err;
     }
 }
+/** 
+    const optionalContentSettings = {
+        contentType: undefined,
+        contentEncoding: undefined,
+        contentLanguage: undefined
+    };
+
+    const optionalMetadataSettings = {
+        context: "Jest-test"
+    };
+    storageConnectionString, share, directory, filename, fileWithPath, optionalContentSettings={}, optionalMetadata={}
+ */
+const uploadFileInfoToQueueAsync = async (config, userNameOrId, fileName, fileNameWithFullPath, options)=>{
+
+    const message = {
+        user:  userNameOrId,
+        fileName: fileName,
+        fileNameWithFullPath:  fileNameWithFullPath,
+        options: options
+    }
+
+    return await storage.addToQueueAsync(
+        config.azstorage.connectionString, 
+        userNameOrId, 
+        JSON.stringify(message),
+        options
+        );
+
+}
 
 module.exports = {
     createWriteStream: createWriteStream,
     createReadStream:createReadStream,
-    readFile:readFile
+    readFile:readFile,
+    uploadFileInfoToQueueAsync: uploadFileInfoToQueueAsync
 };
