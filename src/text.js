@@ -2,6 +2,7 @@ const removeMd = require('remove-markdown'),
     uuid = require('uuid/v4'),
     path = require('path'),
     entities = require('entities'),
+    base64encode = require('base64-url'),
     detect = require('detect-csv');
 
 
@@ -13,6 +14,14 @@ const tts = require('./tts.js'),
 // assume text isn't already encoded
 const xmlEncode = async(text)=>{
     return await entities.encodeXML(text);
+}
+
+const base64Encode = async(text)=>{
+    return await base64encode.encode(text);
+}
+
+const base64Decode = async(text)=>{
+    return await base64encode.decode(text);
 }
 
 const processText = async (options) => {
@@ -300,6 +309,8 @@ const createAudioFile = async (config) =>{
         config.answer.statusCode = 200;
         config.answer.downloadURI=`http://${config.download.host}:${config.download.port}/download/${config.answer.id}.mp3`;
 
+        // TBD: add localFile to list of files to upload to Storage - by UserId
+
         return Object.assign({}, config.answer, {});;
   
     } catch(err){
@@ -353,5 +364,7 @@ module.exports = {
     processManyRequestsFromTsvFile:processManyRequestsFromTsvFile,
     translate:translate,
     processArrayOfText: processArrayOfText,
-    xmlEncode: xmlEncode
+    xmlEncode: xmlEncode,
+    base64Encode: base64Encode,
+    base64Decode: base64Decode
 };
