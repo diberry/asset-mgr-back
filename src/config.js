@@ -20,6 +20,14 @@ const getConfigTest = () => {
             connectionString:process.env.AZSTORAGECONNECTIONSTRING,
             container: process.env.AZSTORAGECONTAINER 
         },
+        azdb:[
+            {
+                host: process.env.AZDB1HOST,
+                catalog: process.env.AZDB1CATALOG,
+                user: process.env.AZDB1USER,
+                pwd: process.env.AZDB1PWD
+            }
+        ],
         upload: {
             uploadDir: "tmp",
             processingDir: "uploads"
@@ -93,7 +101,15 @@ const getConfig = () => {
         azstorage:{
             connectionString:process.env.AZSTORAGECONNECTIONSTRING,
             container: process.env.AZSTORAGECONTAINER 
-        },        
+        },  
+        azdb:[
+            {
+                host: process.env.AZDB1HOST,
+                catalog: process.env.AZDB1CATALOG,
+                user: process.env.AZDB1USER,
+                pwd: process.env.AZDB1PWD
+            }
+        ],              
         upload: {
             dir: path.join(fixTestRoot, process.env.DFBAPIUPLOADSERVERDIR) 
         },     
