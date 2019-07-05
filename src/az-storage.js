@@ -1,5 +1,5 @@
 const azure = require('azure-storage');
-const base64encode = require('base64-url')
+const base64encode = require('base64-url');
 
 // naming rules
 // https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-shares--directories--files--and-metadata#directory-and-file-names
@@ -70,6 +70,8 @@ const addToQueueAsync = async (storageConnectionString, queueName, messageText, 
     return new Promise(function(resolve, reject) {
 
         const queueService = new azure.createQueueService(storageConnectionString);
+
+        //userNameOrIdAsQueueName = storage.applyDirectoryRules(userNameOrId);
 
         queueService.createQueueIfNotExists(queueName.toLowerCase(), error =>{
             if (error) return reject(error);
@@ -176,7 +178,7 @@ const applyDirectoryRules = (name)=>{
 
     // must not contain " \ / : | < > * ?
 
-    return name
+    return name;
 }
 
 module.exports = {
