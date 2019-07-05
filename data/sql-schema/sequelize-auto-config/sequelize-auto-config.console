@@ -1,0 +1,3 @@
+sequelize-auto -h <resource-name>.database.windows.net -d <dbname> -u <user> -x <password> --dialect mssql -c ./sequelize-auto-config.json -o ./sequelize-models/ -t Users -C
+
+sequelize-auto -h <resource-name>.database.windows.net -d <dbname> -u <user> -x <password> --dialect mssql -c ./sequelize-auto-config.json -o ./sequelize-models/ -t Files -C
