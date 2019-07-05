@@ -1,0 +1,12 @@
+{
+    "isSuccessful": true,
+    "statusCode": 204,
+    "body": "",
+    "headers": {
+        "content-length": "0",
+        "server": "Windows-Azure-Queue/1.0 Microsoft-HTTPAPI/2.0",
+        "x-ms-request-id": "4c5fa584-5003-0068-49ae-32cc4a000000",
+        "x-ms-version": "2018-03-28",
+        "date": "Thu, 04 Jul 2019 21:18:31 GMT"
+    }
+}

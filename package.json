@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node ./index.js --experimental-modules",
     "debug": "nodemon --inspect ./index.js",
-    "test": "jest"
+    "test": "jest",
+    "test-in-sequence": "test -- --runInBand"
   },
   "author": "",
   "license": "ISC",
@@ -14,6 +15,7 @@
     "archiver": "^3.0.0",
     "archiver-promise": "^1.0.0",
     "azure-storage": "^2.10.3",
+    "base64-url": "^2.2.2",
     "bluebird": "^3.5.4",
     "compression": "^1.7.4",
     "connect-timeout": "^1.9.0",
@@ -28,6 +30,8 @@
     "moment": "^2.24.0",
     "remove-markdown": "^0.3.0",
     "requestretry": "^4.0.0",
+    "sequelize": "^5.9.2",
+    "tedious": "^6.2.0",
     "tsv": "^0.2.0",
     "uuid": "^3.3.2",
     "winston": "^3.2.1"

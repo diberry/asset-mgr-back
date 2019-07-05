@@ -1,11 +1,14 @@
 const azure = require('azure-storage');
+const base64encode = require('base64-url')
 
+// naming rules
+// https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-shares--directories--files--and-metadata#directory-and-file-names
 
 const addBlobAsync = async (storageConnectionString, container, blobname, originfileWithPath, options)=>{
 
-    return new Promise(function(resolve, reject) {
+    if (!storageConnectionString || !container || !blobname || !originfileWithPath) throw Error("az-storage::addBlobAsync - params missing");
 
-        if (!storageConnectionString || !container || !blobname || !originfileWithPath) throw Error("az-storage::addBlobAsync - params missing");
+    return new Promise(function(resolve, reject) {
 
         const blobService = azure.createBlobService(storageConnectionString);
 
@@ -27,9 +30,9 @@ const addBlobAsync = async (storageConnectionString, container, blobname, origin
 
 const addFileAsync = async (storageConnectionString, share, directory, filename, fileWithPath, optionalContentSettings={}, optionalMetadata={})=>{
 
-    return new Promise(function(resolve, reject) {
+    if (!storageConnectionString || !share || !directory || !filename || !fileWithPath) throw Error("az-storage::addFileAsync - params missing");
 
-        if (!storageConnectionString || !share || !directory || !filename || !fileWithPath) throw Error("az-storage::addFileAsync - params missing");
+    return new Promise(function(resolve, reject) {
 
         const fileService = new azure.FileService(storageConnectionString);
 
@@ -52,6 +55,36 @@ const addFileAsync = async (storageConnectionString, share, directory, filename,
                     
                 });
             });
+        });
+    });
+}
+
+// message options
+// http://azure.github.io/azure-storage-node/QueueService.html#createMessage__anchor
+// default time to live - 7 days
+
+const addToQueueAsync = async (storageConnectionString, queueName, messageText, messageOptions={})=>{
+
+    if (!storageConnectionString || !queueName || !messageText ) throw Error("az-storage::addToQueueAsync - params missing");
+
+    return new Promise(function(resolve, reject) {
+
+        const queueService = new azure.createQueueService(storageConnectionString);
+
+        queueService.createQueueIfNotExists(queueName.toLowerCase(), error =>{
+            if (error) return reject(error);
+
+            queueService.createMessage(
+                queueName.toLowerCase(),
+                messageText,
+                messageOptions,
+                (error, result) => {
+
+                if (error) return reject(error);
+                return resolve(result);
+                
+            });
+
         });
     });
 }
@@ -101,10 +134,59 @@ const getFileUrlAsync = async (storageConnectionString, share, directory, filena
     });
 }
 
+const getQueueMessageAsync = async (storageConnectionString, queueName, options={})=>{
+
+    if (!storageConnectionString || !queueName ) throw Error("az-storage::getQueueMessagesAsync - params missing");
+
+    return new Promise(function(resolve, reject) {
+
+        const queueService = new azure.createQueueService(storageConnectionString);
+
+        queueService.getMessage(queueName.toLowerCase(), options, (error, result) =>{
+
+            if (error) return reject(error);
+            return resolve(result);
+
+        });
+    });
+}
+
+const deleteQueueMessagesAsync = async (storageConnectionString, queueName, messageId, popReceipt, options={})=>{
+
+    if (!storageConnectionString || !queueName || !messageId || !popReceipt ) throw Error("az-storage::getQueueMessagesAsync - params missing");
+
+    return new Promise(function(resolve, reject) {
+
+        const queueService = new azure.createQueueService(storageConnectionString);
+
+        queueService.deleteMessage(queueName.toLowerCase(), messageId, popReceipt, options, (error, result) =>{
+
+            if (error) return reject(error);
+            return resolve(result);
+
+        });
+    });
+}
+
+const applyDirectoryRules = (name)=>{
+
+    if (name.length>255) throw ("az-storage::applyDirectoryRules - name is over 255 char");
+
+    name = base64encode.base64Encode(name);
+
+    // must not contain " \ / : | < > * ?
+
+    return name
+}
+
 module.exports = {
     addBlobAsync:addBlobAsync,
     addFileAsync:addFileAsync,
     getFilePropertiesAsync:getFilePropertiesAsync,
-    getFileUrlAsync:getFileUrlAsync
+    getFileUrlAsync:getFileUrlAsync,
+    applyDirectoryRules:applyDirectoryRules,
+    addToQueueAsync:addToQueueAsync,
+    getQueueMessageAsync:getQueueMessageAsync,
+    deleteQueueMessagesAsync:deleteQueueMessagesAsync
 };
 
