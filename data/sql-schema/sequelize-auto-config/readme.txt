@@ -18,5 +18,5 @@ Use commandline from each console statement to generate model files to use in no
 
 sequelize-auto-config.json passes in as the tedious library's config settings which requires encrypt set to true.
 
-
+https://medium.com/mtholla/integrating-sequelize-into-your-node-app-a446353fb5ee
 

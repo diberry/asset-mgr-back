@@ -1,12 +1,12 @@
-const Sequelize = require('sequelize');
-//const Files = Sequelize.import("./Files.js");
-//const Users = Sequelize.import("./Users.js");
-'use strict';
+const Sequelize = require("sequelize");
+const { User }  = require("./Users.js");
 
+//const Files = require("./Files.js");
 
 module.exports = class Database {
 
     constructor(host, catalog, user, pwd){
+
         this.sequelize = new Sequelize(catalog, user, pwd, {
             host: host,
             dialect: 'mssql',
@@ -20,8 +20,23 @@ module.exports = class Database {
                 options: { 
                     encrypt: true 
                 } 
-            }
+            }, 
+            timestamps: false
           });
+
+        this.models = {
+            User: User.init(this.sequelize, Sequelize)
+        };
+
+        /*
+        // Run `.associate` if it exists,
+        // ie create relationships in the ORM
+        Object.values(models)
+        .filter(model => typeof model.associate === "function")
+        .forEach(model => model.associate(models));
+        
+        */
+
     }
 
     async testConnection(){
