@@ -9,12 +9,12 @@ module.exports = function(sequelize, DataTypes) {
 			field: 'UserId'
 		},
 		email: {
-			type: "NCHAR",
+			type: DataTypes.STRING,
 			allowNull: false,
 			field: 'Email'
 		},
 		name: {
-			type: "NCHAR",
+			type: DataTypes.STRING,
 			allowNull: false,
 			field: 'Name'
 		},

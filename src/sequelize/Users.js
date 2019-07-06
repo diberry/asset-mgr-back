@@ -13,7 +13,7 @@ class User extends Sequelize.Model {
 					defaultValue: Sequelize.UUIDV4
 				},
 				email: {
-					type: "NCHAR",
+					type: "NVARCHAR",
 					allowNull: false,
 					field: 'Email'
 				},
@@ -25,7 +25,6 @@ class User extends Sequelize.Model {
 				dateCreated: {
 					type: DataTypes.DATE,
 					allowNull: false,
-					defaultValue: '(getdate())',
 					field: 'DateCreated',
 					defaultValue: Sequelize.NOW
 				},
@@ -42,15 +41,12 @@ class User extends Sequelize.Model {
 			}
 		);
 	  }
-	  static getId(where) {
-		return this.findOne({
-		  where,
-		  attributes: ["id"],
-		  order: [["createdAt", "DESC"]]
-		});
-	  }	
-	  getName() {
-		return `${this.name}`;
+	  static getByEmail(email) {
+		return this.findAll({
+			where: {
+				email: email
+			}
+		  });
 	  }	    
   }
 

@@ -36,7 +36,13 @@ describe('sequelize db', () => {
             const name = `${timestamp}-name`;
 
             const results = await db.models.User.create({email:email,name:name});
+
+            const user = await db.models.User.getByEmail(email);
             
+            expect(user).not.toEqual(undefined);
+            expect(user.length).toEqual(1);
+            expect(user[0].email).toEqual(email);
+
             done();
         } catch (err){
             done(err);

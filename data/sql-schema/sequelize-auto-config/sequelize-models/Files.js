@@ -18,17 +18,17 @@ module.exports = function(sequelize, DataTypes) {
 			field: 'UserId'
 		},
 		fileContainer: {
-			type: "NCHAR",
+			type: DataTypes.STRING,
 			allowNull: false,
 			field: 'FileContainer'
 		},
 		fileDirectory: {
-			type: "NCHAR",
+			type: DataTypes.STRING,
 			allowNull: false,
 			field: 'FileDirectory'
 		},
 		filename: {
-			type: "NCHAR",
+			type: DataTypes.STRING,
 			allowNull: false,
 			field: 'Filename'
 		},
