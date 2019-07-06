@@ -13,12 +13,12 @@ class User extends Sequelize.Model {
 					defaultValue: Sequelize.UUIDV4
 				},
 				email: {
-					type: "NVARCHAR",
+					type: DataTypes.STRING,
 					allowNull: false,
 					field: 'Email'
 				},
 				name: {
-					type: "NCHAR",
+					type: DataTypes.STRING,
 					allowNull: false,
 					field: 'Name'
 				},

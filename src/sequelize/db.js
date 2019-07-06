@@ -1,7 +1,6 @@
 const Sequelize = require("sequelize");
 const { User }  = require("./Users.js");
-
-//const Files = require("./Files.js");
+const { File } = require("./Files.js");
 
 module.exports = class Database {
 
@@ -25,7 +24,8 @@ module.exports = class Database {
           });
 
         this.models = {
-            User: User.init(this.sequelize, Sequelize)
+            User: User.init(this.sequelize, Sequelize),
+            File: File.init(this.sequelize, Sequelize)
         };
 
         /*
@@ -36,7 +36,16 @@ module.exports = class Database {
         .forEach(model => model.associate(models));
         
         */
-
+       /*
+       this.models.User.hasMany(File, {});
+       this.models.File.belongsTo(User, {
+            onDelete: 'cascade',
+            foreignKey: {
+                field: 'userId',
+                allowNull: false,
+              }
+       });
+       */
     }
 
     async testConnection(){
