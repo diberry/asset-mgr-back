@@ -5,6 +5,7 @@ const express = require('express'),
   cors = require('cors'),
   winston = require('winston'),
   timeout = require('connect-timeout'),
+  session = require('express-session')
   expressWinston = require('express-winston');
 
 
@@ -28,6 +29,7 @@ const setupApp = (app, config) => {
     useTempFiles: true,
     tempFileDir: path.join(app.config.rootDir, '/tmp/')
   }));
+  app.use(session({secret: app.config.secret}))
 
 
 

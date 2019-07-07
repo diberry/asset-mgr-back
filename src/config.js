@@ -8,6 +8,7 @@ const getConfigTest = () => {
     console.log(`fixTestRoot = ${fixTestRoot}`); 
 
     let my_config = {
+        secret: process.env.SECRET,
         port: process.env.DFBAPISERVERPORT,
         rootDir: fixTestRoot,
         ver: process.env.DFBAPISERVERVER,
@@ -90,6 +91,7 @@ const getConfig = () => {
     console.log(`fixTestRoot = ${fixTestRoot}`); 
 
     let my_config = {
+        secret: process.env.SECRET,
         port: process.env.DFBAPISERVERPORT,
         rootDir: fixTestRoot,
         ver: process.env.DFBAPISERVERVER,
