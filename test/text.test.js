@@ -11,6 +11,23 @@ require('dotenv').config();
 const config = require("../src/config.js");
 
 describe('text fns', () => {
+    describe('live connect to 3rd party services', () =>{
+        it('should createAudioFile', async (done) => {
+            try{
+                jest.setTimeout(200000);
+                let testConfig = config.getConfigTest();
+                const answer = text.createResponseObject(config);
+    
+                const answers = await text.createAudioFile(testConfig);
+    
+                expect(answers.statusCode).toEqual(200);
+                done();
+            } catch (err){
+                done(err);
+            }
+        });
+
+    })
     it('should clean a kbAsJson array of markdown', async(done)=>{
 
         try{

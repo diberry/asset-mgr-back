@@ -8,6 +8,7 @@ const removeMd = require('remove-markdown'),
 
 const tts = require('./tts.js'),
     files = require('./files.js'),
+    Database = require("./sequelize/db.js"),
     translator = require('./translate.js');
 
 
@@ -279,7 +280,7 @@ const processArrayOfText = async (answer, config, arrayOfText)=>{
     answer.statusCode = 200;
     return answer;
 }
-const createAudioFile = async (config) =>{
+const createAudioFile = async (config, user) =>{
     try{
 
         if((!config) && (!config.body.text || !config.body.file)) {
@@ -307,9 +308,19 @@ const createAudioFile = async (config) =>{
         let fileProcessed = await processText(options);
         config.answer.processText = fileProcessed;
         config.answer.statusCode = 200;
+
         config.answer.downloadURI=`http://${config.download.host}:${config.download.port}/download/${config.answer.id}.mp3`;
 
-        // TBD: add localFile to list of files to upload to Storage - by UserId
+        if(user){
+            const resultsFile = await db.models.File.create({
+                userId: user.userId, 
+                fileContainer: config.azstorage.container,
+                fileDirectory: user.email,
+                filename: config.answer.downloadURI
+            });
+
+            user.files = await db.models.File.getByUserId(user.userId);
+        }
 
         return Object.assign({}, config.answer, {});;
   
