@@ -29,6 +29,12 @@ const getConfigTest = () => {
                 pwd: process.env.AZDB1PWD
             }
         ],
+        users: {
+            auth0:{
+            clientID: process.env.AUTH0CLIENTID,
+            domain: process.env.AUTH0DOMAIN
+            }
+          },
         upload: {
             uploadDir: "tmp",
             processingDir: "uploads"
@@ -111,7 +117,13 @@ const getConfig = () => {
                 user: process.env.AZDB1USER,
                 pwd: process.env.AZDB1PWD
             }
-        ],              
+        ],    
+        users: {
+            auth0:{
+            clientID: process.env.AUTH0CLIENTID,
+            domain: process.env.AUTH0DOMAIN
+            }
+          },                  
         upload: {
             dir: path.join(fixTestRoot, process.env.DFBAPIUPLOADSERVERDIR) 
         },     
