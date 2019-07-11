@@ -1,0 +1,28 @@
+{
+    "accessToken": "5svGp...removed...je2fO",
+    "idToken": "eyJ0...removed...O0qdJA",
+    "idTokenPayload": {
+        "given_name": "Dina",
+        "family_name": "Berry",
+        "nickname": "diberry",
+        "name": "Dina Berry",
+        "picture": "https://lh6.googleusercontent.com/-B5TSnvFOAHY/AAAAAAAAAAI/AAAAAAAAAAA/ACHi3r...removed...bp1UQ/photo.jpg",
+        "locale": "en",
+        "updated_at": "2019-07-11T03:26:18.912Z",
+        "email": "diberry@microsoft.com",
+        "email_verified": true,
+        "iss": "https://...removed....auth0.com/",
+        "sub": "google-oauth2|1178158...removed...466848",
+        "aud": "EugNfMiIl...removed...DS6PlvEdB",
+        "iat": 1562...removed...5578,
+        "exp": 1562...removed...1578,
+        "at_hash": "ug5Tun...removed...S1TExP0w",
+        "nonce": "L.zEd....removed....AyVT~BFKd8kPauGBxZ"
+    },
+    "appState": null,
+    "refreshToken": null,
+    "state": "Vjt34r5Dj...removed...nm9eF1l",
+    "expiresIn": 7200,
+    "tokenType": "Bearer",
+    "scope": null
+}
