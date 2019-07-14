@@ -1,7 +1,10 @@
 const path = require("path");
 
+let jwt = require('jsonwebtoken');
+
 const textMiddleware = require('./text.js');
 const voices = require('./voices.js');
+const authClientRequest = require("./auth");
 
 const setupRouterLogger = (app) => {
     app.use(expressWinston.logger(app.config.logger.routerLogger.winston));
@@ -36,11 +39,20 @@ const setupRoutes = (app) => {
     app.post('/upload', postUploadTextFile);
     app.post('/json-array', postJsonArray);
     app.post('/tsv', postTsv);
- 
+    app.post('/login', login);
+    app.get('/profile', authClientRequest.verifyClientToken, profile);
+
+
+    // development error handler
+    // stacktraces leaked to user
     if (app.get('env') === 'development') {
         app.use(function(err, req, res, next) {
             if(err.message == "Not Found" || err.statusCode == 404){
                  return res.status(404).send("file not found");
+            } else if (err.name === 'UnauthorizedError'){
+                // failed authentication on routes that require it
+                res.status(401).send('invalid token : ' + err);
+                  
             } else {
                 res.status(err.statusCode || 500).send(err);
             }
@@ -52,7 +64,10 @@ const setupRoutes = (app) => {
     app.use(function(err, req, res, next) {
         if(err.message == "Not Found" || err.statusCode == 404){
             return res.status(404).send("file not found");
-       } else {
+        } else if (err.name === 'UnauthorizedError'){
+            // failed authentication on routes that require it
+            res.status(401).send('invalid token'); 
+        } else {
         res.status(500).send('Something broke!');
        }        
     });
@@ -65,6 +80,69 @@ const getError = (req, res, next) => {
 }
 const getRoot = (req, res) => {
     return res.send('Text to speech');
+}
+const login = async (req, res, next) => {
+  
+    authClientRequest.createClientToken(req,res,next);
+    //const authentication = new Authentication(req.app.config);
+/*
+    let username = req.body.username;
+    let password = req.body.password;
+    // For the given username fetch user from DB
+    let mockedUsername = 'admin';
+    let mockedPassword = 'password';
+
+    let status=null;
+    let body=null;
+
+    let user = {
+        id: 1,
+        username: username,
+        firstName: "dina",
+        lastName: "berry",
+        email: "dinaberry@outlook.com"
+    }
+
+    if (username && password) {
+      if (username === mockedUsername && password === mockedPassword) {
+        let token = jwt.sign(user,
+            req.app.config.secret,
+          { //expiresIn: '24h' // expires in 24 hours
+            //expiresIn: 60 // expires in 1 minute
+            expiresIn: (60 * 10) // expires in 5 minutes
+          }
+        );
+        // return the JWT token for the future API calls
+        body = {
+          success: true,
+          message: 'Authentication successful!',
+          token: token
+        };
+      } else {
+        status=403;
+        body={
+          success: false,
+          message: 'Incorrect username or password'
+        };
+      }
+    } else {
+      status=400;
+      body={
+        success: false,
+        message: 'Authentication failed! Please check the request'
+      };
+    }
+
+    if (!status){
+        status = 200;
+    }
+
+    res.status = status;
+    res.json(body);*/
+}
+const profile = async (req, res, next) => {
+    console.log("profile");
+    return res.status(200).send({"status":profile});
 }
 const getStatus = async (req, res, next) => {
     let answer = textMiddleware.createResponseObject(req.app.config);

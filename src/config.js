@@ -32,7 +32,8 @@ const getConfigTest = () => {
         users: {
             auth0:{
             clientID: process.env.AUTH0CLIENTID,
-            domain: process.env.AUTH0DOMAIN
+            domain: process.env.AUTH0DOMAIN,
+            algorithms: ['RS256']
             }
           },
         upload: {
@@ -121,7 +122,8 @@ const getConfig = () => {
         users: {
             auth0:{
             clientID: process.env.AUTH0CLIENTID,
-            domain: process.env.AUTH0DOMAIN
+            domain: process.env.AUTH0DOMAIN,
+            algorithms: ['RS256']
             }
           },                  
         upload: {

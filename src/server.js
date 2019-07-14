@@ -5,7 +5,8 @@ const express = require('express'),
   cors = require('cors'),
   winston = require('winston'),
   timeout = require('connect-timeout'),
-  session = require('express-session')
+  session = require('express-session'),
+  bodyParser = require('body-parser'),
   expressWinston = require('express-winston');
 
 
@@ -30,7 +31,10 @@ const setupApp = (app, config) => {
     tempFileDir: path.join(app.config.rootDir, '/tmp/')
   }));
   app.use(session({secret: app.config.secret}))
-
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({
+    extended: true
+  }));
 
 
 }
