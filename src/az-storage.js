@@ -1,5 +1,7 @@
 const azure = require('azure-storage');
+const bcrypt = require('bcryptjs');
 const base64encode = require('base64-url');
+const uuid = require('uuid/v4');
 
 // naming rules
 // https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-shares--directories--files--and-metadata#directory-and-file-names
@@ -181,6 +183,110 @@ const applyDirectoryRules = (name)=>{
     return name;
 }
 
+const addUniqueUserToTableAsync = async(storageConnectionString, email, password, tableName)=>{
+
+    if(!storageConnectionString || !email || !password || !tableName) throw ("az-storage::addUserToTable, missing parameters");
+
+    return new Promise(function(resolve, reject) {
+
+        const tableService = azure.createTableService(storageConnectionString);
+
+        tableService.createTableIfNotExists(tableName, function(error, result, response) {
+            if (error) return reject(error);
+            // result contains true if created; false if already exists
+
+            const options = {};
+            options.entityResolver = entityResolver;
+
+            tableService.retrieveEntity(tableName, email.toLowerCase(), "login", options, function(error, result, response) {
+
+                if ((error && error.statusCode!=404) || (response && response.statusCode==200)) return reject("user already exists");
+
+                // don't continue if table already has this user
+                //const options = {};
+                //options.entityResolver = entityResolver;
+
+
+                // TBD: remove sync functions
+                const salt = bcrypt.genSaltSync(10);
+                const hash = bcrypt.hashSync(password, salt);
+
+                const entGen = azure.TableUtilities.entityGenerator;
+                const entity = {
+                    PartitionKey: entGen.String(email.toLowerCase()),
+                    RowKey: entGen.String("login"),
+                    salt: entGen.String(salt),
+                    hash: entGen.String(hash)
+                };
+
+                // insert unique user
+                tableService.insertEntity(tableName, entity, function(error, result, response) {
+                    if (error) return reject(error);
+                    // result contains the ETag for the new entity
+                    return resolve(result);
+    
+                });
+            });
+        });
+    });
+}
+const entityResolver = (entity) => {
+    var resolvedEntity = {};
+
+    for(key in entity) {
+        resolvedEntity[key] = entity[key]._;
+    }
+    return resolvedEntity;
+}
+
+const findUserFromTableAsync = async(storageConnectionString, email, tableName)=>{
+
+    if(!storageConnectionString || !email || !tableName) throw ("az-storage::findUserFromTableAsync, missing parameters");
+
+    return new Promise(function(resolve, reject) {
+
+        const tableService = azure.createTableService(storageConnectionString);
+
+        const options = {};
+        options.entityResolver = entityResolver;
+
+        tableService.retrieveEntity(tableName, email.toLowerCase(), "login", options, function(error, result, response) {
+            if (error) return reject(error);
+            return resolve (result);
+        });
+    });
+}
+const verifyUserPasswordFromTableAsync = async(storageConnectionString, email, password, tableName)=>{
+
+    if(!storageConnectionString || !email || !password || !tableName) throw ("az-storage::verifyUserFromTableAsync, missing parameters");
+
+    user = await findUserFromTableAsync(storageConnectionString, email, tableName);
+
+    const comparison = await bcrypt.compare(password,user.hash)? true: false;
+
+    return comparison;
+}
+
+const deleteUserFromTableAsync = (storageConnectionString, email, tableName) =>{
+
+    if(!storageConnectionString || !email || !tableName) throw ("az-storage::verifyUserFromTableAsync, missing parameters");
+
+    return new Promise(function(resolve, reject) {
+
+        const tableService = azure.createTableService(storageConnectionString);
+
+        var uniqueRow = {
+            PartitionKey: {'_':email.toLowerCase()},
+            RowKey: {'_': "login"}
+          };
+          
+          tableService.deleteEntity(tableName, uniqueRow, function(error, response){
+            if(error) return reject(error);
+            return resolve(response);
+          });
+    });
+}
+
 module.exports = {
     addBlobAsync:addBlobAsync,
     addFileAsync:addFileAsync,
@@ -189,6 +295,10 @@ module.exports = {
     applyDirectoryRules:applyDirectoryRules,
     addToQueueAsync:addToQueueAsync,
     getQueueMessageAsync:getQueueMessageAsync,
-    deleteQueueMessagesAsync:deleteQueueMessagesAsync
+    deleteQueueMessagesAsync:deleteQueueMessagesAsync,
+    addUniqueUserToTableAsync:addUniqueUserToTableAsync,
+    findUserFromTableAsync: findUserFromTableAsync,
+    verifyUserPasswordFromTableAsync: verifyUserPasswordFromTableAsync,
+    deleteUserFromTableAsync: deleteUserFromTableAsync
 };
 

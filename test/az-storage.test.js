@@ -149,5 +149,72 @@ describe('az-storage', () => {
             }
 
         });    
-    });   
+    });  
+    
+    describe('table-user', () => {
+        
+        it('should manage new user to table properly', async (done) => {
+
+            try{
+
+                jest.setTimeout(99000);
+                const timestamp = string.dateAsTimestamp();
+
+                const testConfig = config.getConfigTest();
+
+                const tableName = `usertest${timestamp}`;
+                const email = "JohnDoe@Microsoft.com";
+                const password = "password";
+
+                // add User
+                const addUserResult = await azStorage.addUniqueUserToTableAsync(testConfig.azstorage.connectionString, email, password, tableName);
+
+                expect(addUserResult).not.toEqual(undefined);
+
+                // verify User's password
+                const verified = await azStorage.verifyUserPasswordFromTableAsync(testConfig.azstorage.connectionString, email, password, tableName);
+                    
+                expect(verified).toEqual(true);
+
+                // delete User
+                const deleted = await azStorage.deleteUserFromTableAsync(testConfig.azstorage.connectionString, email, tableName);
+
+                expect(deleted.statusCode).toEqual(204);  
+
+                done();
+
+            } catch(err){
+                done(err);
+            }                          
+        });
+
+        it('should error when adding duplicate user to table', async (done) => {
+
+            try{
+
+                jest.setTimeout(99000);
+                const timestamp = string.dateAsTimestamp();
+
+                const testConfig = config.getConfigTest();
+
+                const tableName = `usertest${timestamp}`;
+                const email = "JohnDoe@Microsoft.com";
+                const password = "password";
+
+                // add User
+                const addUserResult1 = await azStorage.addUniqueUserToTableAsync(testConfig.azstorage.connectionString, email, password, tableName);
+
+                expect(addUserResult1).not.toEqual(undefined);
+
+                const addUserResult2 = await azStorage.addUniqueUserToTableAsync(testConfig.azstorage.connectionString, email, password, tableName);  
+
+                done("allowed duplicate error to be added");
+
+            } catch(err){
+                // success!
+                expect(err).toEqual("user already exists");
+                done();
+            }                          
+        });
+    });
   });
