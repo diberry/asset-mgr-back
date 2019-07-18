@@ -55,10 +55,7 @@ module.exports = class Token {
             );
 
             return resolve(token);
-
-
-
         });
-
     }
+
 }
