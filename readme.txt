@@ -55,3 +55,9 @@ var io = setInterval( function () {
     }
 }, 1000 );
 } ).listen( 8000 );
+
+https://docs.microsoft.com/en-us/azure/active-directory/manage-apps/what-is-single-sign-on
+https://docs.microsoft.com/en-us/azure/active-directory/manage-apps/one-click-sso-tutorial
+https://account.activedirectory.windowsazure.com/r#/applications
+https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-js-sso
+https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app

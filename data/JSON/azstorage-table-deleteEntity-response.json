@@ -1,0 +1,14 @@
+{
+    "isSuccessful": true,
+    "statusCode": 204,
+    "body": "",
+    "headers": {
+        "cache-control": "no-cache",
+        "content-length": "0",
+        "server": "Windows-Azure-Table/1.0 Microsoft-HTTPAPI/2.0",
+        "x-ms-request-id": "a9072551-4002-00dd-70a7-3cc1b5000000",
+        "x-ms-version": "2018-03-28",
+        "x-content-type-options": "nosniff",
+        "date": "Wed, 17 Jul 2019 13:59:38 GMT"
+    }
+}

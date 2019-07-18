@@ -1,0 +1,18 @@
+{
+    "isSuccessful": true,
+    "statusCode": 204,
+    "body": "",
+    "headers": {
+        "cache-control": "no-cache",
+        "content-length": "0",
+        "etag": "W/\"datetime'2019-07-17T13%3A48%3A58.9798661Z'\"",
+        "location": "https://diberrycogservstorage.table.core.windows.net/usertest1563371305974(PartitionKey='johndoe%40microsoft.com',RowKey='login')",
+        "server": "Windows-Azure-Table/1.0 Microsoft-HTTPAPI/2.0",
+        "x-ms-request-id": "3369090e-a002-00ba-48a6-3c7212000000",
+        "x-ms-version": "2018-03-28",
+        "x-content-type-options": "nosniff",
+        "preference-applied": "return-no-content",
+        "dataserviceid": "https://diberrycogservstorage.table.core.windows.net/usertest1563371305974(PartitionKey='johndoe%40microsoft.com',RowKey='login')",
+        "date": "Wed, 17 Jul 2019 13:48:58 GMT"
+    }
+}

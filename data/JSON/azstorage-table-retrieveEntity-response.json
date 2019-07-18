@@ -1,0 +1,24 @@
+{
+    "isSuccessful": true,
+    "statusCode": 200,
+    "body": {
+        "odata.metadata": "https://diberrycogservstorage.table.core.windows.net/$metadata#usertest1563371770946/@Element",
+        "odata.etag": "W/\"datetime'2019-07-17T13%3A56%3A12.2462251Z'\"",
+        "PartitionKey": "johndoe@microsoft.com",
+        "RowKey": "login",
+        "Timestamp": "2019-07-17T13:56:12.2462251Z",
+        "salt": "$2a$10$BB7Zo9pZzjICvoNB4gc2AO",
+        "hash": "$2a$10$BB7Zo9pZzjICvoNB4gc2AO968R6zvo5IFCZ6WN6cSTtH2lTV8goKG"
+    },
+    "headers": {
+        "cache-control": "no-cache",
+        "transfer-encoding": "chunked",
+        "content-type": "application/json;odata=minimalmetadata;streaming=true;charset=utf-8",
+        "etag": "W/\"datetime'2019-07-17T13%3A56%3A12.2462251Z'\"",
+        "server": "Windows-Azure-Table/1.0 Microsoft-HTTPAPI/2.0",
+        "x-ms-request-id": "a906f54d-4002-00dd-38a7-3cc1b5000000",
+        "x-ms-version": "2018-03-28",
+        "x-content-type-options": "nosniff",
+        "date": "Wed, 17 Jul 2019 13:58:40 GMT"
+    }
+}

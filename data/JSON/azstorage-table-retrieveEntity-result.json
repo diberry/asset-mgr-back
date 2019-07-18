@@ -1,0 +1,10 @@
+{
+    "PartitionKey": "johndoe@microsoft.com",
+    "RowKey": "login",
+    "Timestamp": "2019-07-17T13:56:12.246Z",
+    "salt": "$2a$10$BB7Zo9pZzjICvoNB4gc2AO",
+    "hash": "$2a$10$BB7Zo9pZzjICvoNB4gc2AO968R6zvo5IFCZ6WN6cSTtH2lTV8goKG",
+    ".metadata": {
+        "etag": "W/\"datetime'2019-07-17T13%3A56%3A12.2462251Z'\""
+    }
+}

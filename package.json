@@ -16,6 +16,7 @@
     "archiver-promise": "^1.0.0",
     "azure-storage": "^2.10.3",
     "base64-url": "^2.2.2",
+    "bcryptjs": "^2.4.3",
     "bluebird": "^3.5.4",
     "compression": "^1.7.4",
     "connect-timeout": "^1.9.0",
