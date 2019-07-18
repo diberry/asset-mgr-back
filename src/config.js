@@ -19,7 +19,10 @@ const getConfigTest = () => {
         },
         azstorage:{
             connectionString:process.env.AZSTORAGECONNECTIONSTRING,
-            container: process.env.AZSTORAGECONTAINER 
+            container: process.env.AZSTORAGECONTAINER,
+            tables:{
+                userAuthentication: "user"
+            } 
         },
         azdb:[
             {
@@ -109,7 +112,10 @@ const getConfig = () => {
         },
         azstorage:{
             connectionString:process.env.AZSTORAGECONNECTIONSTRING,
-            container: process.env.AZSTORAGECONTAINER 
+            container: process.env.AZSTORAGECONTAINER,
+            tables:{
+                userAuthentication: "user"
+            }  
         },  
         azdb:[
             {
