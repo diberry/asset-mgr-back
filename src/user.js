@@ -25,7 +25,12 @@ module.exports = class User {
 
         if(!result || !result[".metadata"] || !result[".metadata"].etag) throw ("user::create - can't create user");
 
-        return await this.get(user);
+        let createduser = await this.get(user);
+
+        // don't return hash here, make user login
+        delete createduser.hash;
+
+        return createduser;
     }
     /**
      * 

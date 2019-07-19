@@ -20,14 +20,10 @@ describe('user', () => {
             // create user
             const userAuthenticationAccount = await userMgr.create(user, password);
             expect(userAuthenticationAccount.user).toEqual(user);
-            expect(userAuthenticationAccount.hash).not.toBe(undefined);
-            expect(userAuthenticationAccount.hash).not.toEqual(password);
 
             // get user
             const userAuthenticationAccount2 = await userMgr.get(user);
             expect(userAuthenticationAccount2.user).toEqual(user);
-            expect(userAuthenticationAccount2.hash).not.toBe(undefined);
-            expect(userAuthenticationAccount2.hash).not.toEqual(password);
 
             // login user
             const userWithToken = await userMgr.login(user, password);
