@@ -1,55 +1,66 @@
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const Token = require('./token.js')
 
+// TBD: replace with MSGraph
+// https://github.com/diberry/microsoft-authentication-library-for-js
+
+// TBD: change to different auth route fns array
+// https://stackoverflow.com/questions/18700729/how-to-use-the-middleware-to-check-the-authorization-before-entering-each-route
+
+// authGuard
+// associated test is on routes
 const verifyClientToken = async (req,res,next) => {
 
-  const tokenL = req.headers.get('authorization');
-  const tokenU = req.headers.get('Authorization');
+  const tokenL = req.headers.authorization;
+  const tokenU = req.headers.Authorization;
 
-  const token = tokenL || tokenU;
+  let token = tokenL || tokenU;
 
-  const isLoggedIn = token && token.startsWith('Bearer ');
-  /*
+  if (!token){
+    return res.status(401).json({
+        "errors" : [{
+            "msg" : "No authorization provided - empty token param"
+        }]
+    });
+  } 
+
+  token = token.replace('Bearer ',"");
+
+  const tokenMgr = new Token(req.app.config.secret);
+  const decodedToken = await tokenMgr.verifyTokenAsync(token);
   
 
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsImZpcnN0TmFtZSI6ImRpbmEiLCJsYXN0TmFtZSI6ImJlcnJ5IiwiZW1haWwiOiJkaW5hYmVycnlAb3V0bG9vay5jb20iLCJpYXQiOjE1NjMwNzY2OTYsImV4cCI6MTU2MzA3NzI5Nn0.Sj6lLSdz9141iCdxajzqyp2R2PCrL1gO51QBzJMtqXM
-
-  */
-    if (!token){
-        return res.status(401).json({
-            "errors" : [{
-                "msg" : " No authorization provided"
-            }]
-        });
-    } 
-    if (!isLoggedIn){
+  if (!decodedToken){
       return res.status(401).json({
           "errors" : [{
-              "msg" : " No authorization token provided"
+              "msg" : "No authorization provided - no token decoded"
           }]
       });
   } 
-    
-    jwt.verify(token, req.app.config.secret, (err,decoded) => {
-        if(err){
-            return res.status(401).json({
-                "errors" : [{
-                    "msg" : "Invalid Token"
-                }]
-            });
-        }
 
-        // TBD: find user from decoded token
-        console.log(decoded);
-        
-        return next();
+  if(!decodedToken.user.user){
+    return res.status(401).json({
+        "errors" : [{
+            "msg" : "No authorization provided - user"
+        }]
     });
+  } 
+    
+  req.user = decodedToken.user.user;
+  
+  return next();
 }
-const createClientToken = async (req, res, next) => {
-  //const authentication = new Authentication(req.app.config);
+// called from Login route
+// user in table with hash must already exist
+
+/*const createClientToken = async (req, res, next) => {
 
   let username = req.body.username;
   let password = req.body.password;
-  // For the given username fetch user from DB
+
+
+
   let mockedUsername = 'admin';
   let mockedPassword = 'password';
 
@@ -101,8 +112,16 @@ const createClientToken = async (req, res, next) => {
   res.status = status;
   res.json(body);
 }
+
+const hashPassword = async (password)=>{
+  bcrypt.hash(password, rounds, (error, hash) => {
+    callback(error, hash);
+  });
+}
+*/
 module.exports = {
   verifyClientToken: verifyClientToken,
-  createClientToken: createClientToken
+  //createClientToken: createClientToken,
+  //hashPassword: hashPassword
 }
 
