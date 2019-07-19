@@ -1,8 +1,6 @@
 const User = require("../src/user.js"),
     config = require("../src/config.js"),
-    string = require("../src/strings.js"),
-    path = require("path"),
-    fs = require("fs").promises;
+    string = require("../src/strings.js");
 
 describe('user', () => {
 
@@ -29,10 +27,6 @@ describe('user', () => {
             const userWithToken = await userMgr.login(user, password);
             expect(userWithToken.token).not.toEqual(undefined);
             expect(userWithToken.user).toEqual(user);
-
-            // decode token
-            const userDecodedToken = await userMgr.decodeToken(userWithToken.token);
-            expect(userDecodedToken.user.user).toEqual(user);
 
             // delete user
             const wasDeleted = await userMgr.delete(user);
