@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 //works
-const sequelize = new Sequelize('diberry-cogserv-app', 'Sql', 'Redrum1!', {
-    host: 'diberry-personal.database.windows.net',
+const sequelize = new Sequelize(db, user, pwd, {
+    host: server,
     dialect: 'mssql',
     pool: {
       max: 5,

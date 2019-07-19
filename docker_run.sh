@@ -1,1 +1,0 @@
-docker run -p 3005:3005 --rm example:dev
