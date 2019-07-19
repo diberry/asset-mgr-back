@@ -44,7 +44,8 @@ const getConfigTest = () => {
             processingDir: "uploads"
         },
         ttsService: {
-            region: process.env.SPEECHREGION,
+            hostToken: process.env.SPEECHRESOURCETOKENHOST,
+            hostTTS:process.env.SPEECHRESOURCETTSHOST,
             key: process.env.SPEECHKEY
         },
         translator: {
@@ -140,7 +141,8 @@ const getConfig = () => {
             processingDir: "uploads"
         },           
         ttsService: {
-            region: process.env.SPEECHREGION,
+            hostToken: process.env.SPEECHRESOURCETOKENHOST,
+            hostTTS:process.env.SPEECHRESOURCETTSHOST,
             key: process.env.SPEECHKEY
         },
         translator: {
@@ -189,7 +191,7 @@ const checkConfig = (config)=>{
     if(!config.ver && (typeof config.ver == 'string')) throw ("config.ver is empty");
     
     if(!config.ttsService && (typeof config.ttsService == 'object')) throw ("config.ttsService is empty");
-    if(!config.ttsService.region && (typeof config.ttsService.region == 'string')) throw ("config.ttsService.region is empty");  
+    if(!config.ttsService.host && (typeof config.ttsService.host == 'string')) throw ("config.ttsService.host is empty");  
     if(!config.ttsService.key && (typeof config.ttsService.key == 'string')) throw ("config.ttsService.key is empty"); 
     
     if(!config.download && (typeof config.download == 'object')) throw ("config.download is empty");  
