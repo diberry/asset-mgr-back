@@ -1,7 +1,7 @@
 const azure = require('azure-storage');
-const bcrypt = require('bcryptjs');
 const base64encode = require('base64-url');
-const uuid = require('uuid/v4');
+
+const Hash = require('./hash.js');
 
 // naming rules
 // https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-shares--directories--files--and-metadata#directory-and-file-names
@@ -200,23 +200,22 @@ const addUniqueUserToTableAsync = async(storageConnectionString, email, password
 
             tableService.retrieveEntity(tableName, email.toLowerCase(), "login", options, function(error, result, response) {
 
-                if ((error && error.statusCode!=404) || (response && response.statusCode==200)) return reject("user already exists");
-
                 // don't continue if table already has this user
-                //const options = {};
-                //options.entityResolver = entityResolver;
+                if ((error && error.statusCode!=404) || (response && response.statusCode==200)) return reject("user already exists");
 
 
                 // TBD: remove sync functions
-                const salt = bcrypt.genSaltSync(10);
-                const hash = bcrypt.hashSync(password, salt);
+                //const salt = bcrypt.genSaltSync(10);
+                //const hash = bcrypt.hashSync(password, salt);
+                const hashMgr = new Hash();
+                const hash = hashMgr.create(password);
 
                 const entGen = azure.TableUtilities.entityGenerator;
                 const entity = {
                     PartitionKey: entGen.String(email.toLowerCase()),
                     RowKey: entGen.String("login"),
-                    salt: entGen.String(salt),
-                    hash: entGen.String(hash)
+                    salt: entGen.String(hash.salt),
+                    hash: entGen.String(hash.hash)
                 };
 
                 // insert unique user
@@ -262,21 +261,25 @@ const verifyUserPasswordFromTableAsync = async(storageConnectionString, email, p
 
     user = await findUserFromTableAsync(storageConnectionString, email, tableName);
 
-    const comparison = await bcrypt.compare(password,user.hash)? true: false;
-
-    return comparison;
+    const hash = new Hash();
+    return await hash.compare(password,user.hash)? true: false;
 }
+/**
+ * 
+ * @param {*} storageConnectionString 
+ * @param {*} user - string such as email
+ * @param {*} tableName 
+ */
+const deleteUserFromTableAsync = (storageConnectionString, user, tableName) =>{
 
-const deleteUserFromTableAsync = (storageConnectionString, email, tableName) =>{
-
-    if(!storageConnectionString || !email || !tableName) throw ("az-storage::verifyUserFromTableAsync, missing parameters");
+    if(!storageConnectionString || !user || !tableName) throw ("az-storage::verifyUserFromTableAsync, missing parameters");
 
     return new Promise(function(resolve, reject) {
 
         const tableService = azure.createTableService(storageConnectionString);
 
         var uniqueRow = {
-            PartitionKey: {'_':email.toLowerCase()},
+            PartitionKey: {'_':user.toLowerCase()},
             RowKey: {'_': "login"}
           };
           
