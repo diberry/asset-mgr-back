@@ -20,8 +20,6 @@ const createWriteStream = async (fileNameWithFullPath) => {
     } catch (err){
         throw err;
     }
-
-
 }
 const createReadStream = async (fileNameWithFullPath) => {
 
