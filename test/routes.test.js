@@ -6,10 +6,87 @@ const config = require("../src/config.js");
 const server = require("../src/server.js");
 const string = require("../src/strings.js");
 
-
-
+const Token = require('../src/token.js');
 
 describe('routes', () => {
+    describe('user routes', () => {
+        it('should create new User', async(done)=>{
+
+            try{
+                jest.setTimeout(900000);
+                let timestamp = string.dateAsTimestamp();
+                let app = server.get();
+
+                let user = "dina" + timestamp + "@email.com";
+                let pwd = "dina-password-" + timestamp;
+    
+                // create user - also creates hash
+                request(app)
+                .post('/user/create')
+                .set('Content-type', 'application/json')
+                .send({username: user, password: pwd })
+                .expect(200)
+                .end((err, res)=>{
+                    if (err) return done(err);
+        
+                    expect(res.body.success).toEqual(true);
+        
+                    // login user - returns token
+                    request(app)
+                    .post('/login')
+                    .set('Content-type', 'application/json')
+                    .send({username: user, password: pwd})
+                    .expect(200)
+                    .end(async (err, res)=>{
+                        if (err) return done(err);
+            
+                        expect(res.body.success).toEqual(true);
+                        expect(res.body.token).not.toBe(undefined);
+                        
+                        console.log(res.body.token);
+
+                        //decode token to figure out if user email 
+                        const testConfig = config.getConfigTest();
+                        const token = new Token(testConfig.secret);
+                        const decodedToken = await token.verifyTokenAsync(res.body.token);
+
+                        expect(decodedToken.user.user).toEqual(user);
+
+                        // validate only authenticated user can get route 
+                        request(app)
+                        .post('/user/auth-test')
+                        .set('Content-type','application/json')
+                        .set('Authorization', 'Bearer ' + res.body.token)
+                        .send({"a":"b"})
+                        .expect(200)
+                        .end((err,res) => {
+                            if (err) return done(err);
+                            expect(res.body.status).toEqual(`authenticated ${decodedToken.user.user}`);
+
+                            request(app)
+                            .post('/user/auth-test')
+                            .set('Content-type','application/json')
+                            .send({"a":"b"})
+                            .expect(401)
+                            .end((err,res) => {
+                                if (err) return done(err);
+                                expect(res.statusCode).toEqual(401);
+                                done();
+                            })
+
+                        })
+
+                    });
+                });
+    
+            } catch(err){
+                done(`err = ${JSON.stringify(err)}`);
+            }
+
+        });
+
+    })
+
     it('should call / ', async(done)=>{
 
         try{

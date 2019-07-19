@@ -1,10 +1,11 @@
-const path = require("path");
+//const path = require("path");
 
-let jwt = require('jsonwebtoken');
+//let jwt = require('jsonwebtoken');
 
 const textMiddleware = require('./text.js');
 const voices = require('./voices.js');
-const authClientRequest = require("./auth");
+const authClientRequest = require("./auth.js");
+const User = require('./user.js');
 
 const setupRouterLogger = (app) => {
     app.use(expressWinston.logger(app.config.logger.routerLogger.winston));
@@ -27,21 +28,29 @@ const setupRoutes = (app) => {
         } else {
             next();
         }
-      });
+    });
 
-    app.get('/', getRoot);
+    // user
+    app.post('/user/create', userCreate);
+    app.post('/login', login);
+    app.get('/profile', authClientRequest.verifyClientToken, profile);
+    app.post('/user/auth-test',authClientRequest.verifyClientToken,getUserAuthTest);
+
+    // system    
     app.get('/status', getStatus);
     app.get('/config', getConfig);
     app.get('/config/speech', getConfigSpeech);
     app.get('/error', getError);
+
+    // services
     app.get(`/download/:id`, getDownloadMp3);
     app.post('/mp3', postMp3);
     app.post('/upload', postUploadTextFile);
     app.post('/json-array', postJsonArray);
     app.post('/tsv', postTsv);
-    app.post('/login', login);
-    app.get('/profile', authClientRequest.verifyClientToken, profile);
 
+    // root
+    app.get('/', getRoot);
 
     // development error handler
     // stacktraces leaked to user
@@ -81,68 +90,54 @@ const getError = (req, res, next) => {
 const getRoot = (req, res) => {
     return res.send('Text to speech');
 }
-const login = async (req, res, next) => {
-  
-    authClientRequest.createClientToken(req,res,next);
-    //const authentication = new Authentication(req.app.config);
-/*
+const userCreate = async (req, res, next) => {
+
     let username = req.body.username;
     let password = req.body.password;
-    // For the given username fetch user from DB
-    let mockedUsername = 'admin';
-    let mockedPassword = 'password';
 
-    let status=null;
-    let body=null;
-
-    let user = {
-        id: 1,
-        username: username,
-        firstName: "dina",
-        lastName: "berry",
-        email: "dinaberry@outlook.com"
+    if(!username || !password){
+        res.status(400).send("Missing required information");
     }
 
-    if (username && password) {
-      if (username === mockedUsername && password === mockedPassword) {
-        let token = jwt.sign(user,
-            req.app.config.secret,
-          { //expiresIn: '24h' // expires in 24 hours
-            //expiresIn: 60 // expires in 1 minute
-            expiresIn: (60 * 10) // expires in 5 minutes
-          }
-        );
-        // return the JWT token for the future API calls
-        body = {
-          success: true,
-          message: 'Authentication successful!',
-          token: token
-        };
-      } else {
-        status=403;
-        body={
-          success: false,
-          message: 'Incorrect username or password'
-        };
-      }
+    let user = new User(req.app.config);
+    let createdUser = await user.create(username,password);
+
+    if(createdUser && createdUser.user){
+        res.status(200).json({"success":true});
+    }
+
+    next();
+}
+const login = async (req, res, next) => {
+  
+    let username = req.body.username;
+    let password = req.body.password;
+
+    if(!username || !password){
+        res.status(400).send("Missing required information");
+    }
+
+    let user = new User(req.app.config);
+    let loggedInUser = await user.login(username,password);
+
+    if(loggedInUser && loggedInUser.user && loggedInUser.token){
+        
+        res.status(200).json({"success":true, token:loggedInUser.token});
+
     } else {
-      status=400;
-      body={
-        success: false,
-        message: 'Authentication failed! Please check the request'
-      };
+
+        res.status(401).send("Authentication denied");
     }
 
-    if (!status){
-        status = 200;
-    }
-
-    res.status = status;
-    res.json(body);*/
+    next();
 }
 const profile = async (req, res, next) => {
     console.log("profile");
     return res.status(200).send({"status":profile});
+}
+const getUserAuthTest = async(req, res, next)=>{
+    res.status(200).send({"status":"authenticated " + req.user});
+    next();
 }
 const getStatus = async (req, res, next) => {
     let answer = textMiddleware.createResponseObject(req.app.config);
