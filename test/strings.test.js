@@ -11,4 +11,13 @@ describe('strings', () => {
         expect(test[0].groups).toEqual(undefined);
         done();
     });
+    it('splits email',  (done) => {
+        const email = "JohnDoe@Microsoft.com";
+        const parts = strings.userEmailParts(email);
+
+        expect(parts.length).toEqual(2);
+        expect(parts[0]).toEqual('johndoe');
+        expect(parts[1]).toEqual('microsoft.com');
+        done();
+    });
 });        
