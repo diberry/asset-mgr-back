@@ -1,7 +1,34 @@
 require('dotenv').config();
 const path = require("path");
 const winston = require('winston');
+const fse = require('fs-extra');
+const fs = require("fs").promises;
 
+
+const createRequiredDirs = async (config) => {
+
+    try {
+        await ensureDir(config.download.dir);
+
+        // TBD - fix this so path is already known in config
+        // fix code in routes.js and text.js
+        await ensureDir(path.join(config.rootDir,config.upload.processingDir));
+
+        // TBD - is this used anywhere
+        await ensureDir(path.join(config.rootDir,config.upload.uploadDir));
+
+      } catch (err) {
+        throw err;
+      }
+}
+const ensureDir = async (dirpath) => {
+    try {
+        await fs.mkdir(dirpath, { recursive: true });
+    } catch (err) {
+        if (err.code !== 'EEXIST') throw err;
+    }
+}
+  
 const getConfigTest = () => {
 
     let fixTestRoot = path.join(__dirname,"../");
@@ -32,13 +59,6 @@ const getConfigTest = () => {
                 pwd: process.env.AZDB1PWD
             }
         ],
-        users: {
-            auth0:{
-            clientID: process.env.AUTH0CLIENTID,
-            domain: process.env.AUTH0DOMAIN,
-            algorithms: ['RS256']
-            }
-          },
         upload: {
             uploadDir: "tmp",
             processingDir: "uploads"
@@ -87,6 +107,10 @@ const getConfigTest = () => {
             }
         }
     };
+
+    // create required directories
+    createRequiredDirs(my_config);
+
     let checkedConfig = checkConfig(my_config);
     return checkedConfig;
 }
@@ -125,17 +149,7 @@ const getConfig = () => {
                 user: process.env.AZDB1USER,
                 pwd: process.env.AZDB1PWD
             }
-        ],    
-        users: {
-            auth0:{
-            clientID: process.env.AUTH0CLIENTID,
-            domain: process.env.AUTH0DOMAIN,
-            algorithms: ['RS256']
-            }
-          },                  
-        upload: {
-            dir: path.join(fixTestRoot, process.env.DFBAPIUPLOADSERVERDIR) 
-        },     
+        ],                       
         upload: {
             uploadDir: "tmp",
             processingDir: "uploads"
@@ -180,6 +194,10 @@ const getConfig = () => {
             }
         }
     };
+
+    // create required directories
+    createRequiredDirs(my_config);
+
     let checkedConfig = checkConfig(my_config);
     return checkedConfig;
 }
