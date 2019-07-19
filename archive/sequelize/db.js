@@ -1,6 +1,6 @@
 const Sequelize = require("sequelize");
-const { User }  = require("./Users.js");
-const { File } = require("./Files.js");
+const { User }  = require("./Users.js.js");
+const { File } = require("./Files.js.js");
 
 module.exports = class Database {
 

@@ -4,7 +4,7 @@ const strings = require("../../src/strings.js");
 
 describe('sequelize db', () => {
 
-    it('should test connection', async (done) => {
+    xit('should test connection', async (done) => {
 
         try{
             jest.setTimeout(99000);
@@ -22,7 +22,7 @@ describe('sequelize db', () => {
         }
 
     });
-    it('should create user', async (done) => {
+    xit('should create user', async (done) => {
 
         try{
             jest.setTimeout(99000);
@@ -51,7 +51,7 @@ describe('sequelize db', () => {
         }
 
     }); 
-    it('should create file', async (done) => {
+    xit('should create file', async (done) => {
 
         try{
             jest.setTimeout(99000);
