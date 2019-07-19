@@ -36,7 +36,7 @@ describe('text fns', () => {
 
         try{
             jest.setTimeout(200000);
-            const testDataOutputLocation = path.join(__dirname,"../kb.json");
+            const testDataOutputLocation = path.join(__dirname,"../data/kb.json");
             const savedJsonAsText = await fs.readFile(testDataOutputLocation,"utf-8");
             const kbAsJson = JSON.parse(savedJsonAsText);
 
@@ -70,8 +70,8 @@ describe('text fns', () => {
     });
     it('should return convert tsv to JSON', async (done) => {
         try{
-            const testDataInputLocation = path.join(__dirname,"../kb.tsv");
-            const testDataOutputLocation = path.join(__dirname,"../kb.json");
+            const testDataInputLocation = path.join(__dirname,"../data/kb.tsv");
+            const testDataOutputLocation = path.join(__dirname,"../data/kb.json");
 
             const tsvText = await fs.readFile(testDataInputLocation,"utf-8");
             const savedJsonAsText = await fs.readFile(testDataOutputLocation,"utf-8");
