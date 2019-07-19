@@ -30,4 +30,7 @@ Project # 82038
     |SECRET|String used to create user authentication token|
 
 1. `npm start` to run server or `npm test` to run Jest tests. 
-1. [Deploy to Azure web app](https://docs.microsoft.com/en-us/azure/app-service/deploy-local-git) from local Git
+1. [Deploy to Azure web app](https://docs.microsoft.com/en-us/azure/app-service/deploy-local-git) from local Git. [Instructions](https://docs.microsoft.com/en-us/azure/app-service/containers/quickstart-nodejs) to redeploy from CLI.
+
+[Main URL](http://asset-mgr-main.azurewebsites.net/)
+
