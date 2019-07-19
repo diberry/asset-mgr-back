@@ -17,6 +17,10 @@ describe('text fns', () => {
                 jest.setTimeout(200000);
                 let testConfig = config.getConfigTest();
                 const answer = text.createResponseObject(config);
+
+                testConfig.body = {
+                    "text":"this is a test"
+                };
     
                 const answers = await text.createAudioFile(testConfig);
     

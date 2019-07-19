@@ -8,7 +8,7 @@ const removeMd = require('remove-markdown'),
 
 const tts = require('./tts.js'),
     files = require('./files.js'),
-    Database = require("./sequelize/db.js"),
+    //Database = require("../archive/sequelize/db.js.js.js"),
     translator = require('./translate.js');
 
 
@@ -298,8 +298,7 @@ const createAudioFile = async (config, user) =>{
             id: config.answer.id,
             text: config.body.text,
             path: config.download.dir,
-            key: config.ttsService.key,
-            region: config.ttsService.region,
+            ttsService: config.ttsService,
             voice: config.body.voice,
             fileExtension: '.mp3',
             route: config.route
