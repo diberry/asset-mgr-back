@@ -12,7 +12,7 @@ describe('zip', () => {
             jest.setTimeout(200000);
             let testConfig = config.getConfigTest();
 
-            const zipFilenameAndPath = path.join(__dirname, `../out/jest-zip-createZipFile-${strings.dateAsTimestamp()}.zip`);
+            const zipFilenameAndPath = path.join(testConfig.download.dir, `jest-zip-createZipFile-${strings.dateAsTimestamp()}.zip`);
       
             const fileArr = ["Born.mp3", "Died.mp3", "Today.mp3"];
             const fullPathArr = [];
