@@ -18,13 +18,13 @@ var retryStrategy = function (err, response, body) {
   }
 
 // Gets an access token.
-const getAccessToken = async (region, subscriptionKey) => {
+const getAccessToken = async (host, subscriptionKey) => {
 
-    if(!region || !subscriptionKey) throw ("TTS getAccessToken missing params");
+    if(!host || !subscriptionKey) throw ("TTS getAccessToken missing params");
 
         let options = {
             method: 'POST',
-            uri: `https://${region}.api.cognitive.microsoft.com/sts/v1.0/issueToken`,
+            uri: `https://${host}/sts/v1.0/issueToken`,
             headers: {
                 'Ocp-Apim-Subscription-Key': subscriptionKey
             }
@@ -67,9 +67,9 @@ const getVoice = (voice) => {
 // Make sure to update User-Agent with the name of your resource.
 // You can also change the voice and output formats. See:
 // https://docs.microsoft.com/azure/cognitive-services/speech-service/language-support#text-to-speech
-const textToSpeech = async (accessToken,  filenameandpath, region,  text, voice)=> {
+const textToSpeech = async (accessToken,  filenameandpath, host,  text, voice)=> {
 
-        if (!accessToken || !filenameandpath || !region || !text) throw ("TTS textToSpeech missing params");
+        if (!accessToken || !filenameandpath || !host || !text) throw ("TTS textToSpeech missing params");
 
         let selectedVoice = getVoice(voice);
 
@@ -78,7 +78,7 @@ const textToSpeech = async (accessToken,  filenameandpath, region,  text, voice)
 
         let options = {
             "method": "POST",
-            "baseUrl": `https://${region}.tts.speech.microsoft.com/`,
+            "baseUrl": `https://${host}/`,
             "url": "/cognitiveservices/v1",
             "headers": {
                 "Authorization": "Bearer " + accessToken,
@@ -153,12 +153,9 @@ const mp3 = async function(options, textArray) {
         if (!answer.options) {
             answer.error.push('options is empty.');
         } else {
-            if (!answer.options.key) {
-                answer.error.push('options.key is empty.');
-            };
         
-            if (!answer.options.region) {
-                answer.error.push('options.region is empty.');
+            if (!answer.options.ttsService || !answer.options.ttsService.hostToken || !answer.options.ttsService.hostTTS || !answer.options.ttsService.key) {
+                answer.error.push('options.ttsService is empty.');
             };
 
             if(!answer.options.id){
@@ -199,7 +196,7 @@ const mp3 = async function(options, textArray) {
         } 
 
         // get token - access token is good for 9 minutes
-        let response = await getAccessToken(answer.options.region, answer.options.key);
+        let response = await getAccessToken(answer.options.ttsService.hostToken, answer.options.ttsService.key);
 
         if (response && response.body) {
             options.accessToken = response.body;
@@ -208,7 +205,7 @@ const mp3 = async function(options, textArray) {
         }
 
         // get binary - tts
-        answer.result["binary"] = await textToSpeech(options.accessToken,answer.options.path,answer.options.region, answer.options.text, answer.options.voice);
+        answer.result["binary"] = await textToSpeech(options.accessToken,answer.options.path,answer.options.ttsService.hostTTS, answer.options.text, answer.options.voice);
         
         answer.result["success"]=true;
         answer.result["file"]=answer.options.path;

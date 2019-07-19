@@ -19,8 +19,7 @@ describe('tts', () => {
 
             const options = {
                 text: text,
-                key: testConfig.ttsService.key,
-                region: testConfig.ttsService.region,
+                ttsService: testConfig.ttsService,
                 id: uuid(),
                 fileExtension: '.mp3',
                 path:testConfig.download.dir
@@ -50,8 +49,7 @@ describe('tts', () => {
 
             const options = {
                 text: text,
-                key: testConfig.ttsService.key,
-                region: testConfig.ttsService.region,
+                ttsService: testConfig.ttsService,
                 id: uuid(),
                 fileExtension: '.mp3',
                 path:testConfig.download.dir
