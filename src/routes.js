@@ -88,7 +88,7 @@ const getError = (req, res, next) => {
     next(new Error("This is an error and it should be logged to the console"));
 }
 const getRoot = (req, res) => {
-    return res.send('Asset Mgr - back');
+    return res.send('Asset Mgr - back ' + req.app.config.port);
 }
 const userCreate = async (req, res, next) => {
 

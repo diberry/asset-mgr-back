@@ -36,12 +36,12 @@ const getConfigTest = () => {
 
     let my_config = {
         secret: process.env.SECRET,
-        port: process.env.DFBAPISERVERPORT,
+        port: process.env.PORT || process.env.DFBAPISERVERPORT,
         rootDir: fixTestRoot,
         ver: process.env.DFBAPISERVERVER,
         download:{
             host: process.env.DFBAPIDOWNLOADSERVERURI,
-            port: process.env.DFBAPIDOWNLOADSERVERPORT,
+            port: process.env.PORT  || process.env.DFBAPIDOWNLOADSERVERPORT,
             dir: path.join(fixTestRoot, process.env.DFBAPIDOWNLOADSERVERDIR)
         },
         azstorage:{
@@ -127,12 +127,12 @@ const getConfig = () => {
 
     let my_config = {
         secret: process.env.SECRET,
-        port: process.env.DFBAPISERVERPORT,
+        port: process.env.PORT || process.env.DFBAPISERVERPORT,
         rootDir: fixTestRoot,
         ver: process.env.DFBAPISERVERVER,
         download:{
             host: process.env.DFBAPIDOWNLOADSERVERURI,
-            port: process.env.DFBAPIDOWNLOADSERVERPORT,
+            port: process.env.PORT || process.env.DFBAPIDOWNLOADSERVERPORT,
             dir: path.join(fixTestRoot, process.env.DFBAPIDOWNLOADSERVERDIR)
         },
         azstorage:{
