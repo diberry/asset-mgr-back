@@ -33,3 +33,38 @@ Project # 82038
 1. [Deploy to Azure web app](https://docs.microsoft.com/en-us/azure/app-service/deploy-local-git) from local Git. [Instructions](https://docs.microsoft.com/en-us/azure/app-service/containers/quickstart-nodejs) to redeploy from CLI.
 
 [Main URL](http://asset-mgr-main.azurewebsites.net/)
+
+## Deploy to Azure
+
+Following [instructions](https://docs.microsoft.com/en-us/azure/app-service/deploy-local-git?toc=%2Fazure%2Fapp-service%2Fcontainers%2Ftoc.json#get-the-deployment-url). 
+
+### Create user
+
+Do this once, at the beginning, for each local computer you develop with.
+
+1. Create user for local git:
+
+    ```
+    az webapp deployment source config-local-git --name <app-name> --resource-group <group-name>
+    ```
+
+1. Get credentials
+
+    ```
+    az webapp deployment list-publishing-credentials --name <app-name> --resource-group <group-name> --query scmUri --output tsv
+    ```
+
+1. Use URL from response, create remote link for git
+
+    ```
+    git remote add azure <url>
+    ```
+
+### Deploy project to azure via local Git command
+
+1. [Deploy](https://docs.microsoft.com/en-us/azure/app-service/deploy-local-git?toc=%2Fazure%2Fapp-service%2Fcontainers%2Ftoc.json#deploy-the-web-app) to azure.
+
+    ```
+    git push azure master
+    ```
+
