@@ -88,7 +88,7 @@ const getError = (req, res, next) => {
     next(new Error("This is an error and it should be logged to the console"));
 }
 const getRoot = (req, res) => {
-    return res.send('Asset Mgr - back ' + req.app.config.port);
+    return res.send('Asset Mgr - back ' + req.app.config.port + "<br>Contact: diberry");
 }
 const userCreate = async (req, res, next) => {
 
@@ -122,7 +122,9 @@ const login = async (req, res, next) => {
 
     if(loggedInUser && loggedInUser.user && loggedInUser.token){
         
-        res.status(200).json({"success":true, token:loggedInUser.token});
+
+        // TBD: should it return user? 
+        res.status(200).json({"success":true, token:loggedInUser.token, user: username});
 
     } else {
 

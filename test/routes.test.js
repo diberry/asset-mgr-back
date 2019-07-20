@@ -42,6 +42,7 @@ describe('routes', () => {
             
                         expect(res.body.success).toEqual(true);
                         expect(res.body.token).not.toBe(undefined);
+                        expect(res.body.user).toEqual(user);
                         
                         console.log(res.body.token);
 
@@ -60,6 +61,7 @@ describe('routes', () => {
                         .send({"a":"b"})
                         .expect(200)
                         .end((err,res) => {
+
                             if (err) return done(err);
                             expect(res.body.status).toEqual(`authenticated ${decodedToken.user.user}`);
 
