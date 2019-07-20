@@ -33,4 +33,3 @@ Project # 82038
 1. [Deploy to Azure web app](https://docs.microsoft.com/en-us/azure/app-service/deploy-local-git) from local Git. [Instructions](https://docs.microsoft.com/en-us/azure/app-service/containers/quickstart-nodejs) to redeploy from CLI.
 
 [Main URL](http://asset-mgr-main.azurewebsites.net/)
-
