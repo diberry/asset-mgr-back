@@ -122,9 +122,7 @@ const login = async (req, res, next) => {
 
     if(loggedInUser && loggedInUser.user && loggedInUser.token){
         
-
-        // TBD: should it return user? 
-        res.status(200).json({"success":true, token:loggedInUser.token, user: username});
+        res.status(200).json({"success":true, token:loggedInUser.token});
 
     } else {
 
@@ -190,10 +188,19 @@ const postMp3 = async (req, res, next) => {
 
     return res.status(answer.statusCode).send(answer);
 }
+/** 
+ * 1. Upload file
+ * 2. Read post Body to figure out what to do with file:
+ *    a. if no auth token - convert to mp3 and return download URL
+ *    b. if auth token 
+ *       i. authentication token
+ *       ii. body properties: ["cognitive-service","subservice","appName"]
+*/
+
 const postUploadTextFile = async (req, res, next) => {
 
 
-
+    
     if (!req.app.config) throw "upload route - app not configured";
     let answer = textMiddleware.createResponseObject(req.app.config);
 

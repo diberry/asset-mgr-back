@@ -42,7 +42,6 @@ describe('routes', () => {
             
                         expect(res.body.success).toEqual(true);
                         expect(res.body.token).not.toBe(undefined);
-                        expect(res.body.user).toEqual(user);
                         
                         console.log(res.body.token);
 
