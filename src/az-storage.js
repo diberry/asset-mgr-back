@@ -160,7 +160,7 @@ const addUniqueUserToTableAsync = async(storageConnectionString, email, password
 const entityResolver = (entity) => {
     var resolvedEntity = {};
 
-    for(key in entity) {
+    for(let key in entity) {
         resolvedEntity[key] = entity[key]._;
     }
     return resolvedEntity;

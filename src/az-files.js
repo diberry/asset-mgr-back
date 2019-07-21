@@ -104,15 +104,9 @@ module.exports = class AzureFiles {
         });
     }
         
-    /**
-     * https://github.com/Azure-Samples/storage-file-node-getting-started/blob/master/fileSample.js
-     * 
-     * 
-     * Base directory denoted with empty string
-     * 
-     * 
-    */
-    async getDirectoriesAndFiles(directory){
+    // Base directory denoted with empty string
+    // https://github.com/Azure-Samples/storage-file-node-getting-started/blob/master/fileSample.js
+    async getDirectoriesAndFilesAsync(directory){
 
         let continuationToken = 1;
         let items = { files: [], directories: []};  
@@ -122,7 +116,7 @@ module.exports = class AzureFiles {
 
         while(continuationToken){
 
-            result = await this.listDirectoriesAndFiles(directory, continuationToken, azFileOptions);
+            result = await this.listDirectoriesAndFilesAsync(directory, continuationToken, azFileOptions);
 
             // files
             items.files.push.apply(items.files, result.entries.files);
@@ -135,7 +129,9 @@ module.exports = class AzureFiles {
         return items;
     }
     // private to class
-    async listDirectoriesAndFiles(directory, token, options) {
+    async listDirectoriesAndFilesAsync(directory, token, options) {
+
+        if (!token) throw Error("az-files::Files::listDirectoriesAndFilesAsync - params missing");
 
         let self = this;
    
@@ -147,6 +143,64 @@ module.exports = class AzureFiles {
                 if(error) return reject(error);
                 
                 return resolve(result);
+
+            });
+        });
+    }
+    async deleteAllFilesInDirectoryAsync(directory){
+
+        if (!directory) throw Error("az-files::Files::deleteAllFilesInDirectoryAsync - params missing");
+
+        const resultsGetFiles = await this.getDirectoriesAndFilesAsync(directory);
+    
+        const options = undefined;
+        let deleteFileResults = [];
+
+        for(let i=0; i<resultsGetFiles.files.length; i++ ){
+            const file = resultsGetFiles.files[i];
+            let deleteFileResult = await this.deleteFileAsync(directory, file.name, options);
+            deleteFileResults.push({'name':file.name, 'status': deleteFileResult, 'properties':file});
+        }
+        return deleteFileResults;
+
+    }
+    // deleted later during garbage collection
+    async deleteFileAsync(directory, file, options){
+
+
+        if (!directory || !file ) throw Error("az-files::Files::deleteFileAsync - params missing");
+
+        let self = this;
+   
+        return new Promise(function(resolve, reject) {
+       
+            self.fileService.deleteFileIfExists(self.share, directory, file, options, function(error, result) {
+
+                if(error) return reject(error);
+                
+                // result: boolean
+                return resolve(result);
+
+            });
+        });
+    }
+    // The directory must be empty before it can be deleted.
+    async deleteDirectoryAsync(directory, options){
+        if (!directory) throw Error("az-files::Files::deleteDirectoryAsync - params missing");
+
+        let self = this;
+
+        let deleteAllFilesResults = await self.deleteAllFilesInDirectoryAsync(directory);
+        console.log("files deleted");
+
+        return new Promise(function(resolve, reject) {
+    
+            self.fileService.deleteDirectoryIfExists(self.share, directory, options, function(error, result) {
+
+                if(error) return reject(error);
+                
+                // result: boolean
+                return resolve({'directory':directory, 'status': result, 'files':deleteAllFilesResults, 'operation':'delete'});
 
             });
         });

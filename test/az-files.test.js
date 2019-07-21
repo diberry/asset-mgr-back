@@ -52,17 +52,25 @@ describe('AzureFiles', () => {
             expect(url.indexOf(fileName)).not.toEqual(-1);
                 
             // get base directories
-            const directoriesAndFiles = await fileAzure.getDirectoriesAndFiles(baseDirectory);
+            const directoriesAndFiles = await fileAzure.getDirectoriesAndFilesAsync(baseDirectory);
             expect(directoriesAndFiles).not.toBe(undefined);
             expect(directoriesAndFiles.files.length).toBe(0);
             expect(directoriesAndFiles.directories.length).toBe(1);
             expect(directoriesAndFiles.directories[0].name).toEqual(directory);
 
             // get subdir files
-            const subDirectoriesAndFiles = await fileAzure.getDirectoriesAndFiles(directoriesAndFiles.directories[0].name);
+            const subDirectoriesAndFiles = await fileAzure.getDirectoriesAndFilesAsync(directoriesAndFiles.directories[0].name);
             expect(subDirectoriesAndFiles).not.toBe(undefined);
             expect(subDirectoriesAndFiles.files.length).toBe(2);
             expect(subDirectoriesAndFiles.directories.length).toBe(0);            
+
+            // delete directory and all files within
+            const deleteDirectoryResults = await fileAzure.deleteDirectoryAsync(directoriesAndFiles.directories[0].name);
+            expect(deleteDirectoryResults.status).toEqual(true);
+            expect(deleteDirectoryResults.directory).toEqual(directoriesAndFiles.directories[0].name);
+            expect(deleteDirectoryResults.files.length).toEqual(2);
+            expect(deleteDirectoryResults.operation).toEqual('delete');
+
 
             done();
 
