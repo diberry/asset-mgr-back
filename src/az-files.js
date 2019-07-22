@@ -2,8 +2,8 @@
 const azure = require('azure-storage');
 
 /**
- * Share == user
- * Directory == user selects
+ * Share == userEmail
+ * Directory == userEmail selects
  * 
  * 
  * 
@@ -18,15 +18,66 @@ const azure = require('azure-storage');
  */
 module.exports = class AzureFiles {
         
-    constructor(systemConfig, user){
+    constructor(systemConfig, shareName){
 
-        if(!systemConfig || !systemConfig.azstorage || !systemConfig.azstorage.connectionString || !user) throw ("az-files::Files::c'tor - missing params");
-
-        this.share = user.trim().toLowerCase();
+        if(!systemConfig || !systemConfig.azstorage || !systemConfig.azstorage.connectionString || !shareName) throw ("az-files::Files::c'tor - missing params");
 
         this.fileService = new azure.FileService(systemConfig.azstorage.connectionString);
+
+        this.share = shareName.trim().toLowerCase();
+
     }
 
+    // private to class
+    async createShareAsync(share, options=undefined){
+
+        let self = this;
+
+        if (!share ) throw Error("az-files::Files::createShareAsync - params missing");
+    
+        return new Promise(function(resolve, reject) {
+    
+            self.fileService.createShareIfNotExists(self.share, options, (error, response) => {
+                if (error) return reject(error);
+                return resolve(response);
+            });
+        });
+    }
+    async deleteShareAsync(share, options=undefined){
+
+        let self = this;
+
+        if (!share ) throw Error("az-files::Files::deleteShareAsync - params missing");
+    
+        return new Promise(function(resolve, reject) {
+    
+            self.fileService.deleteShareIfExists(self.share, options, (error, response) => {
+                if (error) return reject(error);
+                self.share = undefined;
+                return resolve(response);
+            });
+        });
+    }
+    async doesShareExistAsync(share, options){
+
+        if (!this.share) throw Error("az-files::Files::doesShareExistAsync - prereqs missing");
+
+        if (!share) throw Error("az-files::Files::doesShareExistAsync - params missing");
+
+        let self = this;
+
+        return new Promise(function(resolve, reject) {
+            
+            let doesDirectoryExist = self.fileService.doesShareExist(self.share, function(error, result) {
+
+                if(error) return reject(error);
+
+                // result: boolean
+                return resolve(result);
+
+            });
+        });            
+    }
     async getFilePropertiesAsync(directory, filename){
 
         let self = this;
@@ -191,7 +242,6 @@ module.exports = class AzureFiles {
         let self = this;
 
         let deleteAllFilesResults = await self.deleteAllFilesInDirectoryAsync(directory);
-        console.log("files deleted");
 
         return new Promise(function(resolve, reject) {
     
@@ -200,9 +250,50 @@ module.exports = class AzureFiles {
                 if(error) return reject(error);
                 
                 // result: boolean
-                return resolve({'directory':directory, 'status': result, 'files':deleteAllFilesResults, 'operation':'delete'});
+                return resolve({'directory':directory, 'status': result, 'files':deleteAllFilesResults, 'operation':'deleteDirectory'});
 
             });
         });
+    }
+    async createDirectoryAsync(directory, options=undefined){
+
+        if (!this.share) throw Error("az-files::Files::createDirectoryAsync - prereqs missing");
+
+        if (!directory) throw Error("az-files::Files::createDirectoryAsync - params missing");
+
+        let createShareResults = this.createShareAsync(this.share);
+
+        let self = this;
+
+        return new Promise(function(resolve, reject) {
+    
+            self.fileService.createDirectoryIfNotExists(self.share, directory, options, function(error, result) {
+
+                if(error) return reject(error);
+                
+                // result: boolean
+                return resolve({'directory':directory, 'status': result, 'operation':'createDirectory'});
+
+            });
+        });
+    }
+
+    async doesDirectoryExistAsync(directory, options){
+
+        if (!directory) throw Error("az-files::Files::doesDirectoryExistAsync - params missing");
+
+        let self = this;
+
+        return new Promise(function(resolve, reject) {
+            
+            let doesDirectoryExist = self.fileService.doesDirectoryExist(self.share, directory, function(error, result) {
+
+                if(error) return reject(error);
+
+                // result: boolean
+                return resolve({'directory':directory, 'status': result.exists, 'operation':'doesExist'});
+
+            });
+        });            
     }
 }
