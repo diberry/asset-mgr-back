@@ -1,5 +1,7 @@
 const azStorage = require("./az-storage.js"),
+    AzureFiles = require("./az-files.js")
     Hash = require('./hash.js'),
+    path =require("path"),
     Token = require("./token.js"); 
 
 /**
@@ -10,6 +12,7 @@ module.exports = class User {
 
     constructor(configuration){
         this.config = Object.assign({}, configuration, {});
+        this.userEmail = undefined;
     }
 
     /**
@@ -43,6 +46,9 @@ module.exports = class User {
         const userObj = await azStorage.findUserFromTableAsync(this.config.azstorage.connectionString,user,this.config.azstorage.tables.userAuthentication);
 
         if(!userObj) throw("user::create - can't find user");
+
+        // set class property
+        this.userEmail = userObj.PartitionKey;
 
         return {
             user:userObj.PartitionKey,
@@ -101,4 +107,84 @@ module.exports = class User {
         if(!tokenReturned) throw ("user::login - token generation error");
         return tokenReturned;
     }
+    async addFileToSubdirAsync(subdir, displayFileName, fullPathToFile, optionalContentSettings, optionalMetadata){
+
+        if(!this.userEmail) throw("user::listFilesInDirectory - prereqs are empty");
+
+        if(!subdir || !displayFileName || !fullPathToFile) throw("user::listFilesInDirectory - params are empty");
+
+        // TBD: check if file exists
+
+        const azureFiles = new AzureFiles(this.config, this.userEmail);
+        const fileResult = await azureFiles.addFileAsync(subdir, displayFileName, fullPathToFile, optionalContentSettings, optionalMetadata);
+
+        const fileURL = await azureFiles.getFileUrlAsync(subdir, displayFileName); 
+
+        return fileURL;        
+    }
+    // assumes no nested dirs
+    async listDirectoriesAsync(){
+        if(!this.userEmail) throw("user::listDirectories - prereqs are empty");
+
+        const baseDirectory = "";
+
+        const azureFiles = new AzureFiles(this.config, this.userEmail);
+        const filesAndDirsForBase = await azureFiles.getDirectoriesAndFiles(baseDirectory);
+
+        return filesAndDirsForBase.directories;
+    }
+    async listFilesInDirectoryAsync(directory){
+
+        if(!this.userEmail) throw("user::listFilesInDirectory - prereqs are empty");
+
+        if(!directory) throw("user::listFilesInDirectory - params are empty");
+
+        const azureFiles = new AzureFiles(this.config, this.userEmail);
+        const filesAndDirsForSubdir = await azureFiles.getDirectoriesAndFiles(directory.toLowerCase());
+
+        return filesAndDirsForSubdir.files;
+    }
+    async deleteFileAsync(directory,  displayFileName){
+        if(!this.userEmail) throw("user::deleteFile - prereqs are empty");
+
+        if(!directory || displayFileName) throw("user::deleteFile - params are empty");  
+        
+        const azureFiles = new AzureFiles(this.config, this.userEmail);
+        const filesAndDirsForSubdir = await azureFiles.getDirectoriesAndFiles(directory.toLowerCase());
+
+        // return list of files deleted with status
+        return filesAndDirsForSubdir.files;        
+    }  
+    async deleteShareAsync(options=undefined){
+
+        if(!this.userEmail) throw("user::deleteShareAsync - prereqs are empty");     
+
+        const azureFiles = new AzureFiles(this.config, this.userEmail);
+        const deleteShareResultsJson = await azureFiles.deleteShareAsync(this.userEmail);
+
+        // only when deleting the user
+        return deleteShareResultsJson; 
+    }  
+    async deleteDirectoryAsync(directory, options=undefined){
+
+        if(!this.userEmail) throw("user::deleteDirectory - prereqs are empty");
+
+        if(!directory) throw("user::deleteDirectory - params are empty");      
+
+        const azureFiles = new AzureFiles(this.config, this.userEmail);
+        const deleteDirectoryResultsJson = await azureFiles.deleteDirectoryAsync(directory.toLowerCase());
+
+        // return status & list of files deleted with status
+        return deleteDirectoryResultsJson; 
+    } 
+    async createDirectoryAsync(directory, options=undefined){
+        if(!this.userEmail) throw("user::createDirectory - prereqs are empty");
+
+        if(!directory) throw("user::createDirectory - params are empty");      
+
+        const azureFiles = new AzureFiles(this.config, this.userEmail);
+        const createDirectoryResultsJson = await azureFiles.createDirectoryAsync(directory.toLowerCase());
+
+        return createDirectoryResultsJson; 
+    }  
 }

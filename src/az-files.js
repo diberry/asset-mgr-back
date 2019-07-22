@@ -261,7 +261,7 @@ module.exports = class AzureFiles {
 
         if (!directory) throw Error("az-files::Files::createDirectoryAsync - params missing");
 
-        let createShareResults = this.createShareAsync(this.share);
+        let createShareResults = await this.createShareAsync(this.share);
 
         let self = this;
 
