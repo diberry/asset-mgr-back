@@ -1,6 +1,7 @@
 //const path = require("path");
 
 //let jwt = require('jsonwebtoken');
+const authenticatedRoutes = require('./routes-authenticated-user.js');
 
 const textMiddleware = require('./text.js');
 const voices = require('./voices.js');
@@ -45,9 +46,12 @@ const setupRoutes = (app) => {
     // services
     app.get(`/download/:id`, getDownloadMp3);
     app.post('/mp3', postMp3);
-    app.post('/upload', postUploadTextFile);
     app.post('/json-array', postJsonArray);
     app.post('/tsv', postTsv);
+
+    // services - require authentication
+    app.post('/upload', postUploadTextFile);
+    app.post('/uploadFiles/', authClientRequest.verifyClientToken, authenticatedRoutes.uploadFiles);
 
     // root
     app.get('/', getRoot);

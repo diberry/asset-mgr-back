@@ -1,6 +1,6 @@
 const azure = require('azure-storage');
 const base64encode = require('base64-url');
-
+const uuid = require('uuid/v4')
 const Hash = require('./hash.js');
 
 // naming rules
@@ -143,7 +143,8 @@ const addUniqueUserToTableAsync = async(storageConnectionString, email, password
                     PartitionKey: entGen.String(email.toLowerCase()),
                     RowKey: entGen.String("login"),
                     salt: entGen.String(hash.salt),
-                    hash: entGen.String(hash.hash)
+                    hash: entGen.String(hash.hash),
+                    UID: entGen.String(uuid())
                 };
 
                 // insert unique user

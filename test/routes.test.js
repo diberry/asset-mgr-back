@@ -10,7 +10,7 @@ const Token = require('../src/token.js');
 
 describe('routes', () => {
     describe('user routes', () => {
-        it('should create new User', async(done)=>{
+        it.only('should create new User', async(done)=>{
 
             try{
                 jest.setTimeout(900000);
@@ -21,64 +21,75 @@ describe('routes', () => {
                 let pwd = "dina-password-" + timestamp;
     
                 // create user - also creates hash
-                request(app)
+                const createdUser = await request(app)
                 .post('/user/create')
                 .set('Content-type', 'application/json')
                 .send({username: user, password: pwd })
-                .expect(200)
-                .end((err, res)=>{
-                    if (err) return done(err);
+                .expect(200);
         
-                    expect(res.body.success).toEqual(true);
+                expect(createdUser.body.success).toEqual(true);
         
-                    // login user - returns token
-                    request(app)
-                    .post('/login')
-                    .set('Content-type', 'application/json')
-                    .send({username: user, password: pwd})
-                    .expect(200)
-                    .end(async (err, res)=>{
-                        if (err) return done(err);
-            
-                        expect(res.body.success).toEqual(true);
-                        expect(res.body.token).not.toBe(undefined);
+                // login user - returns token
+                const loggedInUser = await request(app)
+                .post('/login')
+                .set('Content-type', 'application/json')
+                .send({username: user, password: pwd})
+                .expect(200);
+   
+                expect(loggedInUser.body.success).toEqual(true);
+                expect(loggedInUser.body.token).not.toBe(undefined);
                         
-                        console.log(res.body.token);
 
-                        //decode token to figure out if user email 
-                        const testConfig = config.getConfigTest();
-                        const token = new Token(testConfig.secret);
-                        const decodedToken = await token.verifyTokenAsync(res.body.token);
+                const returnedToken = loggedInUser.body.token;
 
-                        expect(decodedToken.user.user).toEqual(user);
+                //decode token to figure out if user email 
+                const testConfig = config.getConfigTest();
+                const token = new Token(testConfig.secret);
+                const decodedToken = await token.verifyTokenAsync(returnedToken);
 
-                        // validate only authenticated user can get route 
-                        request(app)
-                        .post('/user/auth-test')
-                        .set('Content-type','application/json')
-                        .set('Authorization', 'Bearer ' + res.body.token)
-                        .send({"a":"b"})
-                        .expect(200)
-                        .end((err,res) => {
+                expect(decodedToken.user.user).toEqual(user);
 
-                            if (err) return done(err);
-                            expect(res.body.status).toEqual(`authenticated ${decodedToken.user.user}`);
+                // validate only authenticated user can get route 
+                const validatedUser = await request(app)
+                .post('/user/auth-test')
+                .set('Content-type','application/json')
+                .set('Authorization', 'Bearer ' + returnedToken)
+                .send({"a":"b"})
+                .expect(200);
+                            
+                expect(validatedUser.body.status).toEqual(`authenticated ${decodedToken.user.user}`);
 
-                            request(app)
-                            .post('/user/auth-test')
-                            .set('Content-type','application/json')
-                            .send({"a":"b"})
-                            .expect(401)
-                            .end((err,res) => {
-                                if (err) return done(err);
-                                expect(res.statusCode).toEqual(401);
-                                done();
-                            })
+                // authenticated user uploads file
+                let file = path.join(testConfig.rootDir, '/data/short.txt');
+                let directoryNameSetByUser = `dir-${user}-${timestamp}`;
 
-                        })
+                console.log('upload file');
 
-                    });
-                });
+                // upload file for authenticated file
+                // downloadURI returned
+                const downloadResponse = await request(app)
+                .post('/uploadFiles')
+                .set('Content-type', 'text/plain')
+                .set('Authorization', 'Bearer ' + returnedToken)
+                .field("directoryName", directoryNameSetByUser)
+                //.field("tags","text, world, api") // figure this out, currently throws The value for one of the metadata key-value pairs is null, empty, or whitespace.
+                .attach('files', file)
+                .expect(200);
+                    
+                // needs to return 
+                expect(downloadResponse.body.downloadURI.indexOf('https://')).not.toEqual(-1);
+
+                // validate unauthenticated user can NOT get route
+                const failedResponse = await request(app)
+                .post('/user/auth-test')
+                .set('Content-type','application/json')
+                .send({"a":"b"})
+                .expect(401);
+                
+                expect(failedResponse.statusCode).toEqual(401);
+                    
+                done();
+
     
             } catch(err){
                 done(`err = ${JSON.stringify(err)}`);
@@ -283,35 +294,7 @@ describe('routes', () => {
         }
 
     });
-    it('should call /upload route with attached text file', async(done)=>{
-
-        try{
-            jest.setTimeout(25000);
-            let testConfig = config.getConfigTest();
-            let app = server.get(testConfig);
-
-            let file = path.join(testConfig.rootDir, '/data/short.txt');
-
-
-            request(app)
-            .post('/upload')
-            .set('Content-type', 'text/plain')
-            .attach('fileToConvert', file)
-            .expect(200)
-            .end((err, res)=>{
-                if (err) return done(err);
-    
-                const regex = new RegExp(/(http.\/\/.*\/download)\/(.*mp3)/);
-                expect(res.body.downloadURI).toMatch(regex);
-    
-                done();
-            });
-
-        } catch(err){
-            done(`err = ${JSON.stringify(err)}`);
-        }
-
-    });    
+  
     it('should call /json-array route without array in body of JSON', async(done)=>{
 
         try{
@@ -372,8 +355,22 @@ describe('routes', () => {
         }
 
     });     
+    xit('should call /upload route with attached text file', async(done)=>{
+
+        try{
+            jest.setTimeout(25000);
+            let testConfig = config.getConfigTest();
+            let app = server.get(testConfig);
+
+
+
+        } catch(err){
+            done(`err = ${JSON.stringify(err)}`);
+        }
+
+    });  
     // TBD: this always gets a socket error
-    xit('should call /tsv route with file attached', async(done)=>{
+    it('should call /tsv route with file attached', async(done)=>{
 
         try{
             jest.setTimeout(900000);

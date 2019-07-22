@@ -13,6 +13,7 @@ module.exports = class User {
     constructor(configuration){
         this.config = Object.assign({}, configuration, {});
         this.userEmail = undefined;
+        this.UID = undefined; // share name
     }
 
     /**
@@ -35,23 +36,31 @@ module.exports = class User {
 
         return createduser;
     }
+    async setUser(user, uid){
+        this.userEmail = user;
+        this.UID = uid;
+    }
     /**
      * 
      * @param {*} user - string
      */
     async get(user){
 
+        console.log("get(user) = " + user);
+
         if(!user) throw ("user::get - params are emtpy");
 
         const userObj = await azStorage.findUserFromTableAsync(this.config.azstorage.connectionString,user,this.config.azstorage.tables.userAuthentication);
 
-        if(!userObj) throw("user::create - can't find user");
+        if(!userObj || !userObj.PartitionKey || !userObj.UID) throw("user::create - can't find user");
 
         // set class property
         this.userEmail = userObj.PartitionKey;
+        this.UID = userObj.UID;
 
         return {
             user:userObj.PartitionKey,
+            UID: userObj.UID,
             created: userObj.Timestamp,
             hash: userObj.hash
         };
@@ -109,13 +118,13 @@ module.exports = class User {
     }
     async addFileToSubdirAsync(subdir, displayFileName, fullPathToFile, optionalContentSettings, optionalMetadata){
 
-        if(!this.userEmail) throw("user::listFilesInDirectory - prereqs are empty");
+        if(!this.userEmail) throw("user::addFileToSubdirAsync - prereqs are empty");
 
-        if(!subdir || !displayFileName || !fullPathToFile) throw("user::listFilesInDirectory - params are empty");
+        if(!subdir || !displayFileName || !fullPathToFile) throw("user::addFileToSubdirAsync - params are empty");
 
         // TBD: check if file exists
 
-        const azureFiles = new AzureFiles(this.config, this.userEmail);
+        const azureFiles = new AzureFiles(this.config, this.UID);
         const fileResult = await azureFiles.addFileAsync(subdir, displayFileName, fullPathToFile, optionalContentSettings, optionalMetadata);
 
         const fileURL = await azureFiles.getFileUrlAsync(subdir, displayFileName); 

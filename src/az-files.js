@@ -128,7 +128,7 @@ module.exports = class AzureFiles {
 
         let self = this;
 
-        if (!directory || !filename || !fileWithPath) throw Error("az-files::Files::addFileAsync - params missing");
+        if (!self.share || !directory || !filename || !fileWithPath) throw Error("az-files::Files::addFileAsync - params missing");
     
         return new Promise(function(resolve, reject) {
     

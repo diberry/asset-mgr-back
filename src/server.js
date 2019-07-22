@@ -28,7 +28,7 @@ const setupApp = (app, config) => {
   app.use(fileUpload({
     limits: { fileSize: 50 * 1024 * 1024 },
     useTempFiles: true,
-    tempFileDir: path.join(app.config.rootDir, '/tmp/')
+    tempFileDir: path.join(app.config.rootDir, app.config.upload.uploadDir)
   }));
   app.use(session({secret: app.config.secret}))
   app.use(bodyParser.json());

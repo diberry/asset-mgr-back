@@ -64,4 +64,47 @@ describe('user', () => {
         }
 
     });
+    it.only('should update user', async (done) => {
+
+        try {
+            jest.setTimeout(99000);
+            const testConfig = config.getConfigTest();
+            const timestamp = string.dateAsTimestamp();
+            const user = "user-" + timestamp;
+            const password = "password-" + timestamp;
+            const directory = "directory-" + timestamp;
+
+            const fileName1 = `${string.dateAsTimestamp()}_1_short.txt`;
+            const fileName2 = `${string.dateAsTimestamp()}_2_short.txt`;
+            const fileFullPath = path.join(testConfig.rootDir,"./data/short.txt");
+
+            const userMgr = new User(testConfig);
+
+            // create user
+            const userAuthenticationAccount = await userMgr.create(user, password);
+            expect(userAuthenticationAccount.user).toEqual(user);
+
+            // get user
+            const userAuthenticationAccount2 = await userMgr.get(user);
+            expect(userAuthenticationAccount2.user).toEqual(user);
+
+            // create new user2
+            const userMgr2 = new User(testConfig);  
+
+            // get user 3
+            const userAuthenticationAccount3 = await userMgr2.get(user);
+            expect(userAuthenticationAccount3.user).toEqual(user);      
+
+            // add file, get download URL
+            let downloadURL = await userMgr2.addFileToSubdirAsync( directory, 'short.txt', fileFullPath, null, null);
+            expect(downloadURL.indexOf('https://')).not.toEqual(-1);
+
+            done();
+
+        } catch(err){
+            done(err);
+        }
+    });
+
+
   });
