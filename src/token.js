@@ -16,11 +16,13 @@ module.exports = class Token {
             if(!token) return reject("token::verifyTokenAsync - token param is empty");
 
 
+
             jwt.verify(token, self.secret, (err,decoded) => {
                 if(err){
                     return resolve({
                         user: null,
-                        validToken: false
+                        validToken: false,
+                        error: err
                     });
                 }
                 
