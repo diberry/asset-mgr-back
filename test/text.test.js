@@ -86,27 +86,6 @@ describe('text fns', () => {
             done(`err = ${JSON.stringify(err)}`);
         }
     });
-    it('should get all languages returned', async (done) => {
-        try{
-
-            const config = {
-                'to': ['it','de'],
-                'translatorkey': process.env.TRANSLATORKEY,
-                'textArray': [{
-                    'text': 'Hello World!'
-                }]
-            };
-
-            const translations = await text.translate(config);
-
-            expect(translations.length).toBe(1);
-            expect(translations[0].translations.length).toBe(2);
-            done();
-        } catch (err){
-            
-            done(`err = ${JSON.stringify(err)}`);
-        }
-    });
     it('should process many text strings without 429', async (done) => {
         try{
             jest.setTimeout(200000);

@@ -69,7 +69,8 @@ const getConfigTest = () => {
             key: process.env.SPEECHKEY
         },
         translator: {
-            key: process.env.TRANSLATORKEY
+            key: process.env.TRANSLATORKEY,
+            host: process.env.TRANSLATORHOST
         },
         body: {
             text: null,
@@ -160,7 +161,8 @@ const getConfig = () => {
             key: process.env.SPEECHKEY
         },
         translator: {
-            key: process.env.TRANSLATORKEY
+            key: process.env.TRANSLATORKEY,
+            host: process.env.TRANSLATORHOST
         },
         logger: {
             routerLogger:{
