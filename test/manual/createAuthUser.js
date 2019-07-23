@@ -2,8 +2,8 @@ const User = require("../../src/user.js"),
     config = require("../../src/config.js");
 
 const testConfig = config.getConfigTest();
-const user = "user2";
-const password = "user2";
+const user = "user1";
+const password = "user1";
 
 const userMgr = new User(testConfig);
 
