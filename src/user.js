@@ -46,6 +46,8 @@ module.exports = class User {
      */
     async get(user){
 
+        if(!this.config || !this.config.azstorage || !this.config.azstorage.connectionString || !this.config.azstorage.tables || !this.config.azstorage.tables.userAuthentication) throw ("user::get - prereqs are empty");
+
         console.log("get(user) = " + user);
 
         if(!user) throw ("user::get - params are emtpy");
@@ -101,13 +103,26 @@ module.exports = class User {
      */
     async delete(user){
 
-        if(!user) throw ("user::delete - params are emtpy");
+        try{
+            if(!user) throw ("user::delete - params are emtpy");
 
-        const userObjDeleted = await azStorage.deleteUserFromTableAsync(this.config.azstorage.connectionString,user,this.config.azstorage.tables.userAuthentication);
+            const userObj = await this.get(user);
 
-        if(userObjDeleted.isSuccessful) return true;
+            if(!userObj || !userObj.UID) throw('user::delete - can\'t get User object');
 
-        return false;
+            const userDeleteShare = await this.deleteShareAsync();
+
+            // TBD: what is the best thing to do if this fails?
+            if(!userDeleteShare) console.log("didn't delete user share when deleting user");
+
+            const userObjDeleted = await azStorage.deleteUserFromTableAsync(this.config.azstorage.connectionString,user,this.config.azstorage.tables.userAuthentication);
+            if(userObjDeleted.isSuccessful) return true;
+
+            return false;
+        }catch(err){
+            console.log(err);
+            throw err;
+        }
     }
     async decodeToken(token){
         if(!token) throw ("user::token - params are emtpy");
@@ -166,10 +181,10 @@ module.exports = class User {
     }  
     async deleteShareAsync(options=undefined){
 
-        if(!this.userEmail) throw("user::deleteShareAsync - prereqs are empty");     
+        if(!this.UID) throw("user::deleteShareAsync - prereqs are empty");     
 
-        const azureFiles = new AzureFiles(this.config, this.userEmail);
-        const deleteShareResultsJson = await azureFiles.deleteShareAsync(this.userEmail);
+        const azureFiles = new AzureFiles(this.config, this.UID);
+        const deleteShareResultsJson = await azureFiles.deleteShareAsync(this.UID);
 
         // only when deleting the user
         return deleteShareResultsJson; 

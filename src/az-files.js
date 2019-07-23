@@ -43,6 +43,7 @@ module.exports = class AzureFiles {
             });
         });
     }
+    // TBD: remove param and fix tests
     async deleteShareAsync(share, options=undefined){
 
         let self = this;

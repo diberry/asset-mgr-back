@@ -35,7 +35,7 @@ describe('user', () => {
 
             // create directory - share created too
             const createUserResults = await userMgr.createDirectoryAsync(directory);
-            expect(createUserResults.status.created).not.toEqual(true);
+            expect(createUserResults.status.created).toEqual(true);
 
             // add file 1
             const addFileResults1 = await userMgr.addFileToSubdirAsync(directory, fileName1, fileFullPath);
@@ -46,11 +46,11 @@ describe('user', () => {
             expect(createUserResults).not.toEqual(undefined);
 
             // delete directory
-            const deleteDirectory = await userMgr.deleteDirectoryAsyncc(directory);
+            const deleteDirectory = await userMgr.deleteDirectoryAsync(directory);
             expect(deleteDirectory).not.toEqual(undefined);
 
             // delete share
-            const wasShareDeleted = await userMgr.delete(user);
+            const wasShareDeleted = await userMgr.deleteShareAsync(user);
             expect(wasShareDeleted).toEqual(true);
 
             // delete user
@@ -64,7 +64,7 @@ describe('user', () => {
         }
 
     });
-    it.only('should update user', async (done) => {
+    it('should update user', async (done) => {
 
         try {
             jest.setTimeout(99000);

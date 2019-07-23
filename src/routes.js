@@ -36,6 +36,7 @@ const setupRoutes = (app) => {
     app.post('/login', login);
     app.get('/profile', authClientRequest.verifyClientToken, profile);
     app.post('/user/auth-test',authClientRequest.verifyClientToken,getUserAuthTest);
+    app.post('/user/delete', authClientRequest.verifyClientToken, authenticatedRoutes.deleteUser);
 
     // system    
     app.get('/status', getStatus);

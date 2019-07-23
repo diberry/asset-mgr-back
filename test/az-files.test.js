@@ -27,7 +27,9 @@ describe('AzureFiles', () => {
             };
 
             const optionalMetadata = {
-                context: "Jest-test"
+                context: "Jest-test",
+                list: "this, is, my, list",
+                stringifiedObject: "{a:'b', hello, 'dog'}"
             };
 
             // create class, which creates share==userName

@@ -1,4 +1,5 @@
 const request = require('supertest'),
+    User = require('../src/user.js'),
     fs = require("fs").promises;
 
 
@@ -72,6 +73,7 @@ describe('routes', () => {
                 .set('Content-type', 'text/plain')
                 .set('Authorization', 'Bearer ' + returnedToken)
                 .field("directoryName", directoryNameSetByUser)
+                .field("metadata", '{"a":"b","list":"this, is, my, list","stringifiedObject":"{a:1}"}')
                 //.field("tags","text, world, api") // figure this out, currently throws The value for one of the metadata key-value pairs is null, empty, or whitespace.
                 .attach('files', file)
                 .expect(200);
@@ -87,7 +89,14 @@ describe('routes', () => {
                 .expect(401);
                 
                 expect(failedResponse.statusCode).toEqual(401);
-                    
+
+                // delete user and share
+                const deleteUserResponse = await request(app)
+                .post('/user/delete')
+                .set('Content-type', 'text/plain')
+                .set('Authorization', 'Bearer ' + returnedToken)
+                .expect(204);
+
                 done();
 
     
@@ -141,7 +150,7 @@ describe('routes', () => {
                 .post('/user/auth-test')
                 .set('Content-type','application/json')
                 .set('Authorization', 'Bearer [object Object]')
-                .send({"a":"b"})
+                .send({"metadata":{'a':'b', 'list':'this, is, my, list', 'stringifiedObject':'{a:1}'}})
                 .expect(401);
                     
                 expect(invalidToken).not.toBe(undefined);
@@ -429,7 +438,7 @@ describe('routes', () => {
 
         });  
         // TBD: this always gets a socket error
-        it('should call /tsv route with file attached', async(done)=>{
+        xit('should call /tsv route with file attached', async(done)=>{
 
             try{
                 jest.setTimeout(900000);
