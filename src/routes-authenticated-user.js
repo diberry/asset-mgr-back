@@ -30,13 +30,10 @@ const uploadFiles = async (req, res, next) => {
     const user = new User(req.app.config);
    
     const returnedUserObj = await user.get(req.user);
-    //user.setUser(req.user, returnedUserObj.UID);
 
     const optionalContentSettings = undefined;
     const optionalMetadata = req.body.tags;
 
-    //req.files.forEach((file, index, array)=>{
-    //    console.log(file.name)
     const downloadURL = await user.addFileToSubdirAsync(req.body.directoryName, req.files.files.name, req.files.files.tempFilePath, optionalContentSettings, optionalMetadata);
 
     answer.downloadURI =  downloadURL;
