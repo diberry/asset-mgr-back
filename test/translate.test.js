@@ -1,48 +1,75 @@
 const translator = require("../src/translate.js");
-const uuid = require('uuid/v4');
-require('dotenv').config();
+const config = require("../src/config.js");
 
 describe('translate', () => {
-    it('should succeed', async (done) => {
+    it('should translate', async (done) => {
         try{
 
-            const config = {
+            const testConfig = config.getConfigTest();
+
+            const testProperties = {
                 'to': ['it','de'],
-                'translatorkey': process.env.TRANSLATORKEY,
-                'textArray': [{
-                    'text': 'Hello World!'
-                }]
+                'textArray': [
+                    {'text':'Hello World!'}
+                ]
             };
-            
-            let json = await translator.translate(config);
 
-            expect(json).not.toEqual(undefined);
-            expect(json[0]).not.toEqual(undefined);
-            expect(json[0].translations).not.toEqual(undefined);
-            expect(json[0].translations[0]).not.toEqual(undefined);
-            expect(json[0].translations[0].text).toEqual( "Salve, mondo!");
+            Object.assign(testConfig, testProperties);
+            
+            let translationResults = await translator.translate(testConfig);
+
+            expect(translationResults).not.toEqual(undefined);
+            expect(translationResults[0]).not.toEqual(undefined);
+            expect(translationResults[0].translations).not.toEqual(undefined);
+            expect(translationResults[0].translations.length).toEqual(2);
+            expect(translationResults[0].translations[0].text).toEqual( "Salve, mondo!");
+            expect(translationResults[0].translations[1].text).toEqual( "Hallo Welt!");
+
+            let uniqueCultures = await translator.getUniqueCultures(translationResults[0].translations);
+
+            expect(uniqueCultures).not.toEqual(undefined);
+            expect(uniqueCultures.length).toEqual(2);
+            expect(uniqueCultures.indexOf('it')).not.toEqual(-1);
+            expect(uniqueCultures.indexOf('de')).not.toEqual(-1);
+
             done();
         } catch (err){
             done(err);
         }
     });
-    it('should get unique cultures (`to` property) from array', async (done) => {
+    it('should detect culture from text', async (done) => {
         try{
 
-            const testArray = [
-                {'to': 'it', 'text': 'bene'},
-                {'to': 'it', 'text':'no'},
-                {'to':'de', 'text':'no'}];
+            const testConfig = config.getConfigTest();
+
+            [{
+                'text': 'Salve, mondo!'
+          }]
+
+            const testProperties = {
+                'textArray': [
+                    {'text':"one"}, 
+                    {'text':"hola"}, 
+                    {'text':"bien"},
+                    {'text':"da"}
+                ]
+            };
+
+            Object.assign(testConfig, testProperties);    
             
-            let json = await translator.getUniqueCultures(testArray);
+            let json = await translator.detectLanguage(testConfig);
 
             expect(json).not.toEqual(undefined);
-            expect(json.length).toEqual(2);
-            expect(json.indexOf('it')).not.toEqual(-1);
-            expect(json.indexOf('de')).not.toEqual(-1);
+            expect(json.length).toEqual(4);
+
+            let jsonAsString = JSON.stringify(json.map(x => x.language).sort());
+            let expectedAsString = JSON.stringify(["en", "es", "fr", "pt"].sort());
+
+            expect(jsonAsString).toEqual(expectedAsString);
+
             done();
         } catch (err){
             done(err);
         }
-    });
+    });    
 });

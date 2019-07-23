@@ -1,0 +1,82 @@
+[
+    {
+        "language": "en",
+        "score": 1,
+        "isTranslationSupported": true,
+        "isTransliterationSupported": false,
+        "alternatives": [
+            {
+                "language": "de",
+                "score": 1,
+                "isTranslationSupported": true,
+                "isTransliterationSupported": false
+            },
+            {
+                "language": "pl",
+                "score": 1,
+                "isTranslationSupported": true,
+                "isTransliterationSupported": false
+            }
+        ]
+    },
+    {
+        "language": "es",
+        "score": 1,
+        "isTranslationSupported": true,
+        "isTransliterationSupported": false,
+        "alternatives": [
+            {
+                "language": "en",
+                "score": 1,
+                "isTranslationSupported": true,
+                "isTransliterationSupported": false
+            },
+            {
+                "language": "ca",
+                "score": 1,
+                "isTranslationSupported": true,
+                "isTransliterationSupported": false
+            }
+        ]
+    },
+    {
+        "language": "fr",
+        "score": 1,
+        "isTranslationSupported": true,
+        "isTransliterationSupported": false,
+        "alternatives": [
+            {
+                "language": "es",
+                "score": 1,
+                "isTranslationSupported": true,
+                "isTransliterationSupported": false
+            },
+            {
+                "language": "en",
+                "score": 1,
+                "isTranslationSupported": false,
+                "isTransliterationSupported": false
+            }
+        ]
+    },
+    {
+        "language": "pt",
+        "score": 1,
+        "isTranslationSupported": true,
+        "isTransliterationSupported": false,
+        "alternatives": [
+            {
+                "language": "it",
+                "score": 1,
+                "isTranslationSupported": true,
+                "isTransliterationSupported": false
+            },
+            {
+                "language": "de",
+                "score": 1,
+                "isTranslationSupported": true,
+                "isTransliterationSupported": false
+            }
+        ]
+    }
+]

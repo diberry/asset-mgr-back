@@ -13,16 +13,46 @@ const rp = require('request-promise'),
 const translate = async (config) =>{
     try{
 
+        if(!config || !config.translator ||!config.translator.host ||!config.translator.key ||!config.textArray) throw ("translate::translate - missing required params");
+
         const options =  {
             method: 'POST',
-            baseUrl: 'https://api.cognitive.microsofttranslator.com/',
+            baseUrl: `https://${config.translator.host}/`,
             url: 'translate',
             qs: {
                 'api-version': '3.0',
                 'to': config.to //array of cultures
             },
             headers: {
-            'Ocp-Apim-Subscription-Key': config.translatorkey,
+            'Ocp-Apim-Subscription-Key': config.translator.key,
+            'Content-type': 'application/json',
+            'X-ClientTraceId': uuid().toString()
+            },
+            body: config.textArray,
+            json: true,
+            useQuerystring: true
+        }
+
+        return await rp(options);
+
+    } catch (err){
+        throw err;
+    }
+}
+const detectLanguage = async (config) =>{
+    try{
+
+        if(!config || !config.translator ||!config.translator.host ||!config.translator.key ||!config.textArray) throw ("translate::translate - missing required params");
+
+        const options =  {
+            method: 'POST',
+            baseUrl:  `https://${config.translator.host}/`,
+            url: 'detect',
+            qs: {
+                'api-version': '3.0',
+            },
+            headers: {
+            'Ocp-Apim-Subscription-Key': config.translator.key,
             'Content-type': 'application/json',
             'X-ClientTraceId': uuid().toString()
             },
@@ -43,6 +73,9 @@ const translate = async (config) =>{
  * @returns array of Obj: {to:culture, text:translatedToBasedOnToCulture}
  */
 const getTranslations =  (jsonFromTranslate) =>{
+
+    if(!jsonFromTranslate) throw ("translate::getTranslations - missing required params");
+
     try{
         
         if(!jsonFromTranslate || !jsonFromTranslate[0] || !jsonFromTranslate[0].translations || jsonFromTranslate[0].translations.length==0) return [];
@@ -60,12 +93,14 @@ const getTranslations =  (jsonFromTranslate) =>{
  */
 const getUniqueCultures = (jsonFromGetTranslations) =>{
     
+    if(!jsonFromGetTranslations) throw ("translate::getUniqueCultures - missing required params");
+
     try{
         if(!jsonFromGetTranslations || jsonFromGetTranslations.length==0)return [];
 
         const unique = [...new Set(jsonFromGetTranslations.map(item => item.to))];
 
-        return unique;
+        return unique.sort();
 
     } catch (err){
         throw err;
@@ -75,5 +110,6 @@ const getUniqueCultures = (jsonFromGetTranslations) =>{
 module.exports = {
     translate: translate,
     getTranslations: getTranslations,
-    getUniqueCultures:getUniqueCultures
+    getUniqueCultures:getUniqueCultures,
+    detectLanguage:detectLanguage
 };
