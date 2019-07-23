@@ -17,6 +17,8 @@ const verifyClientToken = async (req,res,next) => {
 
   let token = tokenL || tokenU;
 
+  console.log(token);
+
   if (!token){
     return res.status(401).json({
         "errors" : [{
@@ -25,31 +27,45 @@ const verifyClientToken = async (req,res,next) => {
     });
   } 
 
-  token = token.replace('Bearer ',"");
+  if(token.indexOf('Bearer ')== -1) {
+    return res.status(401).json({
+      "errors" : [{
+          "msg" : "No authorization provided - no token decoded"
+      }]
+    });
+  } else {
 
-  const tokenMgr = new Token(req.app.config.secret);
-  const decodedToken = await tokenMgr.verifyTokenAsync(token);
+    token = token.replace('Bearer ',"");
+
+    const tokenMgr = new Token(req.app.config.secret);
+    const decodedToken = await tokenMgr.verifyTokenAsync(token);
   
-
-  if (!decodedToken){
+    if (!decodedToken){
+        return res.status(401).json({
+            "errors" : [{
+                "msg" : "No authorization provided - no token decoded"
+            }]
+        });
+    } else if (decodedToken.error){
+      return res.status(401).json({
+        "errors" : [{
+            "msg" : "Authorization provided - " + decodedToken.error
+        }]
+      });
+    } else if (!decodedToken.user || !decodedToken.user.user){
       return res.status(401).json({
           "errors" : [{
-              "msg" : "No authorization provided - no token decoded"
+              "msg" : "Authorization provided - user can't be determined"
           }]
       });
-  } 
-
-  if(!decodedToken.user.user){
-    return res.status(401).json({
-        "errors" : [{
-            "msg" : "No authorization provided - user"
-        }]
-    });
-  } 
+    } else {
+      req.user = decodedToken.user.user;
+    }
     
-  req.user = decodedToken.user.user;
-  
-  return next();
+  }
+
+  next();
+  return;
 }
 // called from Login route
 // user in table with hash must already exist
