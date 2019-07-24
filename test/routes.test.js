@@ -104,7 +104,7 @@ describe('routes', () => {
             }
 
         });
-        it.only('should create new User, upload file, and translate', async(done)=>{
+        it('should create new User, upload file, and translate', async(done)=>{
 
             try{
                 jest.setTimeout(900000);
