@@ -137,6 +137,11 @@ const textToSpeech = async (accessToken,  filenameandpath, host,  text, voice)=>
 
 // Use async and await to get the token before attempting
 // to convert text to speech.
+/**
+ * Filename is created from path + ID + extension
+ * @param {*} options  includes tts key and host, path to file to write with audio, text, voice, id, file extension
+ * @param {*} textArray 
+ */
 const mp3 = async function(options, textArray) {
 
 
@@ -213,7 +218,43 @@ const mp3 = async function(options, textArray) {
         return answer;
 
 }
+/**
+ * 
+ * @param {*} ttsConfig - Key and Host
+ * @param {*} text - assume english only for now
+ * @param {*} voice - don't set - it will default to something
+ * @param {*} path - local path to save audio file to
+ * @param {*} fileNameWithoutExtension 
+ * @param {*} fileExtension - default to mp3
+ * @param {*} textArray - convert array of text - defaults to null - not used yet - not wired up
+ */
+const sendTextToSpeechFile = async (ttsServiceConfig, text, voice, path, fileNameWithoutExtension, fileExtension='.mp3', textArray=undefined) => {
 
+    try{
+
+        if(!ttsServiceConfig || !text || !path || !fileNameWithoutExtension) throw ("routes-authenticated-user::sendTextToSpeechFile - missing params");
+
+        // construct expected object
+        const ttsConfig = {
+            text: text,
+            ttsService: ttsServiceConfig,
+            id: fileNameWithoutExtension, // previously only used ID, now use ID + originalFileNameWithoutExtension + culture
+            fileExtension: fileExtension,
+            path: path,
+            voice: voice
+        }
+
+        let mp3Response = await mp3(ttsConfig, textArray);
+
+        if(mp3Response && (mp3Response.result.success==true) && mp3Response.result && mp3Response.result.file) return mp3Response.result.file;
+
+        // TBD - fix this - return error of some kind
+        return undefined
+    } catch (err){
+        throw err;
+    }
+}
 module.exports = {
-    mp3: mp3
+    mp3: mp3, // called from text.js
+    sendTextToSpeechFile: sendTextToSpeechFile // called from routes-authenticated-user.js 
 };

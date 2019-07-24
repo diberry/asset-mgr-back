@@ -3,6 +3,7 @@ const User = require('./user.js');
 const uuid = require('uuid/v4');
 const fs = require("fs").promises;
 const translator = require('./translate.js');
+const tts = require('./tts.js');
 
 const createResponseObject = (config) => {
     return {
@@ -99,15 +100,45 @@ const uploadFiles = async (req, res, next) => {
         // add file to Azure Storage Files
         const downloadURL = await user.addFileToSubdirAsync(req.body.directoryName, newFileNameWithCulture, localPathForOriginalFile, optionalContentSettings, optionalMetadataObj);
 
-        // add incoming file to array
-        answer.files.push({
-            "filename": newFileNameWithCulture,
-            "URL": downloadURL,
-            "text": text,
-            "culture":culture
-        });
+        if(downloadURL){
+            // add incoming file to array
+            answer.files.push({
+                "filename": newFileNameWithCulture,
+                "URL": downloadURL,
+                "text": text,
+                "culture":culture
+            });
+        }
+
+        const voice = undefined;
+        const mp3Path =  path.join(req.app.config.rootDir, `./${req.app.config.upload.processingDir}`);
+        const fileNameWithOutExt = localFileNameParsed.name + "_" + culture;
+
+        // create mp3 of file
+        const localFilePathAndNameToAudioFile = await tts.sendTextToSpeechFile(req.app.config.ttsService, text, voice, mp3Path, fileNameWithOutExt);
+
+        if(localFilePathAndNameToAudioFile){
+
+            const audioFileContentSettings = undefined;
+            const audioFileMetadataSettings = undefined;
+            const audioFilePathParts = path.parse(localFilePathAndNameToAudioFile);
+
+            // add audio file to Azure Storage Files   
+            const audioFileDownloadURL = await user.addFileToSubdirAsync(req.body.directoryName, audioFilePathParts.base, localFilePathAndNameToAudioFile, audioFileContentSettings, audioFileMetadataSettings);
+
+            if(audioFileDownloadURL){
+                // add incoming file to array
+                answer.files.push({
+                    "filename": audioFilePathParts.base,
+                    "URL": audioFileDownloadURL,
+                    "text": text,
+                    "culture":culture
+                });
+            }
+        }
 
         // if asking for translations
+        // TBD: translation to audio file
         if(req.body.translations){
 
             let translateConfig = {};
@@ -156,6 +187,7 @@ const uploadFiles = async (req, res, next) => {
     }
     
 }
+
 const getCultureFromText = async (translatorConfig, text) => {
 
     if (!translatorConfig || !text) throw ("routes-authenticated-user::getCultureFromText - missing params");

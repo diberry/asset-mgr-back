@@ -67,4 +67,29 @@ describe('tts', () => {
         }
 
     });
+    it('should return local file path and name of newly created audio file', async (done) => {
+
+        try {
+            jest.setTimeout(250000);
+
+            const testConfig = config.getConfigTest();
+            const fileFullPath = path.join(testConfig.rootDir,"./data/short.txt");
+            const directory = path.join(testConfig.rootDir, testConfig.upload.processingDir);
+
+            const text = await files.readFile(fileFullPath, "utf-8");
+            const culture = "en";
+            const timestamp = strings.dateAsTimestamp();
+            const audioFileNameWithoutExtension = `jest-test-${timestamp}-${culture}`;
+
+            // not passing file extension or text array on purpose
+            const localPathAndFileOfNewAudio = await tts.sendTextToSpeechFile(testConfig.ttsService, text, undefined, directory, audioFileNameWithoutExtension);
+
+            expect(localPathAndFileOfNewAudio).not.toEqual(`${directory}\${localPathAndFileOfNewAudio}.mp3`);
+            done();
+
+        } catch(err){
+            done(err);
+        }
+
+    });
   });

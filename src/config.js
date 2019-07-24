@@ -66,7 +66,8 @@ const getConfigTest = () => {
         ttsService: {
             hostToken: process.env.SPEECHRESOURCETOKENHOST,
             hostTTS:process.env.SPEECHRESOURCETTSHOST,
-            key: process.env.SPEECHKEY
+            key: process.env.SPEECHKEY,
+            defaultAudioExtension: '.mp3'
         },
         translator: {
             key: process.env.TRANSLATORKEY,
@@ -158,7 +159,8 @@ const getConfig = () => {
         ttsService: {
             hostToken: process.env.SPEECHRESOURCETOKENHOST,
             hostTTS:process.env.SPEECHRESOURCETTSHOST,
-            key: process.env.SPEECHKEY
+            key: process.env.SPEECHKEY,
+            defaultAudioExtension: 'mp3'
         },
         translator: {
             key: process.env.TRANSLATORKEY,
