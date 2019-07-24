@@ -1,0 +1,18 @@
+[
+    {
+        "detectedLanguage": {
+            "language": "en",
+            "score": 1
+        },
+        "translations": [
+            {
+                "text": "Salve, mondo!",
+                "to": "it"
+            },
+            {
+                "text": "Hallo Welt!",
+                "to": "de"
+            }
+        ]
+    }
+]

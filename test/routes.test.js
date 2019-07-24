@@ -1,5 +1,4 @@
 const request = require('supertest'),
-    User = require('../src/user.js'),
     fs = require("fs").promises;
 
 
@@ -105,7 +104,92 @@ describe('routes', () => {
             }
 
         });
+        it.only('should create new User, upload file, and translate', async(done)=>{
 
+            try{
+                jest.setTimeout(900000);
+                let timestamp = string.dateAsTimestamp();
+                let app = server.get();
+
+                let user = "dina" + timestamp + "@email.com";
+                let pwd = "dina-password-" + timestamp;
+    
+                // create user - also creates hash
+                const createdUser = await request(app)
+                .post('/user/create')
+                .set('Content-type', 'application/json')
+                .send({username: user, password: pwd })
+                .expect(200);
+        
+                expect(createdUser.body.success).toEqual(true);
+        
+                // login user - returns token
+                const loggedInUser = await request(app)
+                .post('/login')
+                .set('Content-type', 'application/json')
+                .send({username: user, password: pwd})
+                .expect(200);
+   
+                expect(loggedInUser.body.success).toEqual(true);
+                expect(loggedInUser.body.token).not.toBe(undefined);
+                        
+
+                const returnedToken = loggedInUser.body.token;
+
+                //decode token to figure out if user email 
+                const testConfig = config.getConfigTest();
+                const token = new Token(testConfig.secret);
+                const decodedToken = await token.verifyTokenAsync(returnedToken);
+
+                expect(decodedToken.user.user).toEqual(user);
+
+                // validate only authenticated user can get route 
+                const validatedUser = await request(app)
+                .post('/user/auth-test')
+                .set('Content-type','application/json')
+                .set('Authorization', 'Bearer ' + returnedToken)
+                .send({"a":"b"})
+                .expect(200);
+                            
+                expect(validatedUser.body.status).toEqual(`authenticated ${decodedToken.user.user}`);
+
+                // authenticated user uploads file
+                let file = path.join(testConfig.rootDir, '/data/short.txt');
+                let directoryNameSetByUser = `dir-${user}-${timestamp}`;
+
+                console.log('upload file');
+
+                // upload file for authenticated file
+                // downloadURI returned
+                const downloadResponse = await request(app)
+                .post('/uploadFiles')
+                .set('Content-type', 'text/plain')
+                .set('Authorization', 'Bearer ' + returnedToken)
+                .field("directoryName", directoryNameSetByUser)
+                .field("metadata", '{"a":"b","list":"this, is, my, list","stringifiedObject":"{a:1}"}')
+                .field("translations", ['it','de'])
+                //.field("tags","text, world, api") // figure this out, currently throws The value for one of the metadata key-value pairs is null, empty, or whitespace.
+                .attach('files', file)
+                .expect(200);
+                    
+                // needs to return array of all files associated with this request
+                expect(downloadResponse.body.files.length).toEqual(3);
+
+                // delete user and share
+                const deleteUserResponse = await request(app)
+                .post('/user/delete')
+                .set('Content-type', 'text/plain')
+                .set('Authorization', 'Bearer ' + returnedToken)
+                .expect(204);
+
+                done();
+
+    
+            } catch(err){
+                done(`err = ${JSON.stringify(err)}`);
+            }
+
+        });
         it('should fail if bearerToken is `Bearer [object Object]`', async(done)=>{
 
             try{

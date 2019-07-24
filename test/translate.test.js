@@ -2,7 +2,7 @@ const translator = require("../src/translate.js");
 const config = require("../src/config.js");
 
 describe('translate', () => {
-    it('should translate', async (done) => {
+    it.only('should translate', async (done) => {
         try{
 
             const testConfig = config.getConfigTest();

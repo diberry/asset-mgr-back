@@ -13,18 +13,18 @@ const rp = require('request-promise'),
 const translate = async (config) =>{
     try{
 
-        if(!config || !config.translator ||!config.translator.host ||!config.translator.key ||!config.textArray) throw ("translate::translate - missing required params");
+        if(!config || !config.host ||!config.key ||!config.textArray || !config.to) throw ("translate::translate - missing required params");
 
         const options =  {
             method: 'POST',
-            baseUrl: `https://${config.translator.host}/`,
+            baseUrl: `https://${config.host}/`,
             url: 'translate',
             qs: {
                 'api-version': '3.0',
                 'to': config.to //array of cultures
             },
             headers: {
-            'Ocp-Apim-Subscription-Key': config.translator.key,
+            'Ocp-Apim-Subscription-Key': config.key,
             'Content-type': 'application/json',
             'X-ClientTraceId': uuid().toString()
             },
@@ -42,17 +42,17 @@ const translate = async (config) =>{
 const detectLanguage = async (config) =>{
     try{
 
-        if(!config || !config.translator ||!config.translator.host ||!config.translator.key ||!config.textArray) throw ("translate::translate - missing required params");
+        if(!config ||!config.host ||!config.key ||!config.textArray) throw ("translate::translate - missing required params");
 
         const options =  {
             method: 'POST',
-            baseUrl:  `https://${config.translator.host}/`,
+            baseUrl:  `https://${config.host}/`,
             url: 'detect',
             qs: {
                 'api-version': '3.0',
             },
             headers: {
-            'Ocp-Apim-Subscription-Key': config.translator.key,
+            'Ocp-Apim-Subscription-Key': config.key,
             'Content-type': 'application/json',
             'X-ClientTraceId': uuid().toString()
             },

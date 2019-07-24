@@ -1,6 +1,8 @@
 "use strict";
 const User = require('./user.js');
-    const uuid = require('uuid/v4');
+const uuid = require('uuid/v4');
+const fs = require("fs").promises;
+const translator = require('./translate.js');
 
 const createResponseObject = (config) => {
     return {
@@ -45,25 +47,107 @@ const uploadFiles = async (req, res, next) => {
 
         // create return JSON template
         let answer = createResponseObject(req.app.config);
+        answer.files = [];
 
         // get user
         const user = new User(req.app.config);
         const returnedUserObj = await user.get(req.user);
 
         if(!returnedUserObj) throw("routes-authenticated::uploadFiles - can't get authenticated user");
+        
+        // file name
+        let localFileName = req.files.files.name;
+        let localFileNameParsed = path.parse(localFileName);
 
-        // process metadata and content settings
-        let optionalContentSettings = undefined;
-        let optionalMetadata = undefined;
-        if(req.body && req.body.metadata){
-            optionalMetadata = parseMetadata(req.body.metadata);
+        // path
+        let localPathForOriginalFile = path.join(req.app.config.rootDir, `./${req.app.config.upload.processingDir}/${returnedUserObj.UID}_${localFileName}`);
+
+        // move and rename file
+        await req.files.files.mv(localPathForOriginalFile);
+
+        // read file contents
+        // assuming UTF-8 for now
+        const text = await fs.readFile(localPathForOriginalFile, "UTF-8");
+
+        // get culture
+        let culture = undefined;
+        culture = await getCultureFromText(req.app.config.translator, text);
+
+
+        // file metadata
+        let optionalMetadataObj = undefined;
+        if(req.body.metadata){
+            optionalMetadataObj = parseMetadata(req.body.metadata);
+
+            if(optionalMetadataObj && culture){
+                Object.assign(optionalMetadataObj,{'culture':culture});
+            }
+    
         }
 
-        // add file to Azure Storage Files
-        const downloadURL = await user.addFileToSubdirAsync(req.body.directoryName, req.files.files.name, req.files.files.tempFilePath, optionalContentSettings, optionalMetadata);
+        // part the incoming file name
+        let pathParts = path.parse(localPathForOriginalFile);
+        pathParts.originalName = localFileNameParsed.name;
+        pathParts.UID = returnedUserObj.UID;
+        pathParts.metadata = optionalMetadataObj;
 
-        // return downloadURI
-        answer.downloadURI =  downloadURL;
+        // add culture to end of incoming file name
+        let newFileNameWithCulture = localFileNameParsed.name + "_" + culture + pathParts.ext;
+
+        let optionalContentSettings = undefined;
+
+        // add file to Azure Storage Files
+        const downloadURL = await user.addFileToSubdirAsync(req.body.directoryName, newFileNameWithCulture, localPathForOriginalFile, optionalContentSettings, optionalMetadataObj);
+
+        // add incoming file to array
+        answer.files.push({
+            "filename": newFileNameWithCulture,
+            "URL": downloadURL,
+            "text": text,
+            "culture":culture
+        });
+
+        // if asking for translations
+        if(req.body.translations){
+
+            let translateConfig = {};
+            Object.assign(translateConfig, req.app.config.translator);
+            translateConfig.to = req.body.translations;
+            translateConfig.textArray = [{'text': text}];
+
+            // translate text
+            const translatorResponse = await translator.translate(translateConfig);
+
+            for(const translation of translatorResponse[0].translations){
+
+                // create file name that indicates new culture
+                const culturedFileName = `${pathParts.UID}_${pathParts.originalName}_${translation.to}${pathParts.ext}`;
+                
+                const displayFileName = `${pathParts.originalName}_${translation.to}${pathParts.ext}`;
+
+                // create local file path 
+                const localPathAndCulturedFileName = path.join(pathParts.dir, culturedFileName);
+
+                // save translated text to local file 
+                await fs.writeFile(localPathAndCulturedFileName, translation.text, 'utf-8');
+
+                // add culture to metadata
+                pathParts.metadata.culture = translation.to;
+                
+                let optionalContentSettings = undefined;
+
+                // add file to Azure Storage Files
+                const downloadURL = await user.addFileToSubdirAsync(req.body.directoryName, displayFileName, localPathAndCulturedFileName, optionalContentSettings, pathParts.metadata);
+
+                // add incoming file to array
+                answer.files.push({
+                    "filename": displayFileName,
+                    "URL": downloadURL,
+                    "text": translation.text,
+                    "culture":translation.to
+                });
+            };
+        }
 
         return res.status(200).send(answer);
 
@@ -71,6 +155,21 @@ const uploadFiles = async (req, res, next) => {
         next(err);
     }
     
+}
+const getCultureFromText = async (translatorConfig, text) => {
+
+    if (!translatorConfig || !text) throw ("routes-authenticated-user::getCultureFromText - missing params");
+
+    translatorConfig.textArray = [{"text":text}];
+
+    // get culture
+    const detectLanguageResult = await translator.detectLanguage(translatorConfig);
+
+    if(detectLanguageResult && detectLanguageResult.length>0 && detectLanguageResult[0].language) {
+        return detectLanguageResult[0].language;
+    }
+    
+    return undefined;
 }
 const deleteUser = async (req, res, next)=>{
     try{
