@@ -133,7 +133,7 @@ module.exports = class User {
     }
     async addFileToSubdirAsync(subdir, displayFileName, fullPathToFile, optionalContentSettings, optionalMetadata){
 
-        if(!this.userEmail) throw("user::addFileToSubdirAsync - prereqs are empty");
+        if(!this.UID) throw("user::addFileToSubdirAsync - prereqs are empty");
 
         if(!subdir || !displayFileName || !fullPathToFile) throw("user::addFileToSubdirAsync - params are empty");
 
@@ -148,32 +148,32 @@ module.exports = class User {
     }
     // assumes no nested dirs
     async listDirectoriesAsync(){
-        if(!this.userEmail) throw("user::listDirectories - prereqs are empty");
+        if(!this.UID) throw("user::listDirectories - prereqs are empty");
 
         const baseDirectory = "";
 
-        const azureFiles = new AzureFiles(this.config, this.userEmail);
+        const azureFiles = new AzureFiles(this.config, this.UID);
         const filesAndDirsForBase = await azureFiles.getDirectoriesAndFiles(baseDirectory);
 
         return filesAndDirsForBase.directories;
     }
     async listFilesInDirectoryAsync(directory){
 
-        if(!this.userEmail) throw("user::listFilesInDirectory - prereqs are empty");
+        if(!this.UID) throw("user::listFilesInDirectory - prereqs are empty");
 
         if(!directory) throw("user::listFilesInDirectory - params are empty");
 
-        const azureFiles = new AzureFiles(this.config, this.userEmail);
+        const azureFiles = new AzureFiles(this.config, this.UID);
         const filesAndDirsForSubdir = await azureFiles.getDirectoriesAndFiles(directory.toLowerCase());
 
         return filesAndDirsForSubdir.files;
     }
     async deleteFileAsync(directory,  displayFileName){
-        if(!this.userEmail) throw("user::deleteFile - prereqs are empty");
+        if(!this.UID) throw("user::deleteFile - prereqs are empty");
 
         if(!directory || displayFileName) throw("user::deleteFile - params are empty");  
         
-        const azureFiles = new AzureFiles(this.config, this.userEmail);
+        const azureFiles = new AzureFiles(this.config, this.UID);
         const filesAndDirsForSubdir = await azureFiles.getDirectoriesAndFiles(directory.toLowerCase());
 
         // return list of files deleted with status
@@ -191,22 +191,22 @@ module.exports = class User {
     }  
     async deleteDirectoryAsync(directory, options=undefined){
 
-        if(!this.userEmail) throw("user::deleteDirectory - prereqs are empty");
+        if(!this.UID) throw("user::deleteDirectory - prereqs are empty");
 
         if(!directory) throw("user::deleteDirectory - params are empty");      
 
-        const azureFiles = new AzureFiles(this.config, this.userEmail);
+        const azureFiles = new AzureFiles(this.config, this.UID);
         const deleteDirectoryResultsJson = await azureFiles.deleteDirectoryAsync(directory.toLowerCase());
 
         // return status & list of files deleted with status
         return deleteDirectoryResultsJson; 
     } 
     async createDirectoryAsync(directory, options=undefined){
-        if(!this.userEmail) throw("user::createDirectory - prereqs are empty");
+        if(!this.UID) throw("user::createDirectory - prereqs are empty");
 
         if(!directory) throw("user::createDirectory - params are empty");      
 
-        const azureFiles = new AzureFiles(this.config, this.userEmail);
+        const azureFiles = new AzureFiles(this.config, this.UID);
         const createDirectoryResultsJson = await azureFiles.createDirectoryAsync(directory.toLowerCase());
 
         return createDirectoryResultsJson; 
