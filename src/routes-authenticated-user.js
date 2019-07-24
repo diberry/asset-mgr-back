@@ -180,6 +180,32 @@ const uploadFiles = async (req, res, next) => {
             };
         }
 
+        // save answer as operational log
+        const operationalLogID = uuid();
+
+        answer["operation"]={
+            ID:operationalLogID
+        };
+
+        const operationalLogFileName = `operation-${operationalLogID}.json`;
+
+        let localPathForOperationalLog = path.join(req.app.config.rootDir, `./${req.app.config.upload.processingDir}/${operationalLogFileName}`);
+
+        await fs.writeFile(localPathForOperationalLog, JSON.stringify(answer), 'utf-8');
+
+        // add file to Azure Storage Files
+        const operationalLogURL = await user.addFileToSubdirAsync(req.body.directoryName, operationalLogFileName, localPathForOperationalLog, undefined, undefined);
+
+        answer.files.push({
+            "log": 'operationalLog',
+            "filename": operationalLogFileName,
+            "URL": operationalLogURL,
+            "text": undefined,
+            "culture":undefined
+        });
+
+        // TBD: delete all local files created
+
         return res.status(200).send(answer);
 
     } catch(err){

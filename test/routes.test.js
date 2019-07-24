@@ -173,7 +173,8 @@ describe('routes', () => {
                 .expect(200);
                     
                 // needs to return array of all files associated with this request
-                expect(downloadResponse.body.files.length).toEqual(4);
+                expect(downloadResponse.body.files.length).toEqual(5);
+                expect(downloadResponse.body.files[4].log).toEqual('operationalLog');
 
                 // delete user and share
                 const deleteUserResponse = await request(app)
