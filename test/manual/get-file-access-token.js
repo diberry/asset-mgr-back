@@ -1,8 +1,8 @@
     const azure = require('azure-storage');
 
     try{
-      const connectionString = "DefaultEndpointsProtocol=https;AccountName=diberryassetmgrtest;AccountKey=kjYv5q78sOmoc5l8XcW9YZwJCi2Z2H/e3Hmh4jvJfmwJN+1s84OqSRfRyZqpOWgf0QUyE4lh3QX+ChYaJGKcXQ==;EndpointSuffix=core.windows.net";
-      const share = "067d3c58-1332-4db5-8ed4-7a935fc91002";
+      const connectionString = "";
+      const share = "";
       const directory = "this-is-a-test";
       const file = "short_en.mp3";
 
