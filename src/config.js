@@ -46,7 +46,7 @@ const getConfigTest = () => {
         },
         azstorage:{
             connectionString:process.env.AZSTORAGECONNECTIONSTRING,
-            container: process.env.AZSTORAGECONTAINER,
+            container: process.env.AZSTORAGECONTAINER, //misnamed - this is the resource name
             tables:{
                 userAuthentication: "user"
             } 
