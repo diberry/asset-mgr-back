@@ -6,31 +6,6 @@ const Hash = require('./hash.js');
 // naming rules
 // https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-shares--directories--files--and-metadata#directory-and-file-names
 
-const addBlobAsync = async (storageConnectionString, container, blobname, originfileWithPath, options)=>{
-
-    if (!storageConnectionString || !container || !blobname || !originfileWithPath) throw Error("az-storage::addBlobAsync - params missing");
-
-    return new Promise(function(resolve, reject) {
-
-        const blobService = azure.createBlobService(storageConnectionString);
-
-        blobService.createContainerIfNotExists(container.toLowerCase(), error => {
-            if (error) return reject(error);
-            blobService.createBlockBlobFromLocalFile(
-                container.toLowerCase(),
-                blobname,
-                originfileWithPath,
-                options,
-                (error, result) => {
-                if (error) return reject(error);
-                return resolve(result);
-                }
-            );
-        });
-    });
-}
-
-
 // message options
 // http://azure.github.io/azure-storage-node/QueueService.html#createMessage__anchor
 // default time to live - 7 days
@@ -220,7 +195,6 @@ const deleteUserFromTableAsync = (storageConnectionString, user, tableName) =>{
 }
 
 module.exports = {
-    addBlobAsync:addBlobAsync,
     applyDirectoryRules:applyDirectoryRules,
     addToQueueAsync:addToQueueAsync,
     getQueueMessageAsync:getQueueMessageAsync,

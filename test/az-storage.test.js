@@ -7,32 +7,6 @@ const string = require("../src/strings.js");
 
 describe('az-storage', () => {
 
-    describe('blob', () => {
-
-        it('should add to blob container', async (done) => {
-
-            try {
-                const testConfig = config.getConfigTest();
-
-                const fileName = `short.txt`;
-                const fileFullPath = path.join(testConfig.rootDir,"./data/" + fileName);
-                const options = {};
-
-                const containername = `${string.dateAsTimestamp()}${testConfig.azstorage.container}`;
-                const blobname = `${string.dateAsTimestamp()}_${fileName}`;
-
-                const blobResult = await azStorage.addBlobAsync(testConfig.azstorage.connectionString, containername, blobname, fileFullPath, options);
-
-                expect(blobResult.lastModified).not.toEqual(undefined);
-                done();
-
-            } catch(err){
-                done(err);
-            }
-
-        });
-    });
-
     describe('queue messages', () => {
 
         it('should add/get/delete queue message', async (done) => {
