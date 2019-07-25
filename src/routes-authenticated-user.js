@@ -97,7 +97,7 @@ const uploadFiles = async (req, res, next) => {
 
         let optionalContentSettings = undefined;
 
-        // add file to Azure Storage Files
+        // add original file to Azure Storage Files
         const downloadURL = await user.addFileToSubdirAsync(req.body.directoryName, newFileNameWithCulture, localPathForOriginalFile, optionalContentSettings, optionalMetadataObj);
 
         if(downloadURL){
@@ -125,6 +125,8 @@ const uploadFiles = async (req, res, next) => {
 
             // add audio file to Azure Storage Files   
             const audioFileDownloadURL = await user.addFileToSubdirAsync(req.body.directoryName, audioFilePathParts.base, localFilePathAndNameToAudioFile, audioFileContentSettings, audioFileMetadataSettings);
+
+            // TBD: add file to blob storage too - for public consumption
 
             if(audioFileDownloadURL){
                 // add incoming file to array
