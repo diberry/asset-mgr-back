@@ -297,4 +297,39 @@ module.exports = class AzureFiles {
             });
         });            
     }
+    /**
+     * Synchronous fn. Create read-only access unless sharedAccessPolicy param is passed in.
+     * @param {*} directory 
+     * @param {*} file 
+     * @param {*} sharedAccessPolicy - JSON object
+     * 
+     */
+    getAccessToken(directory, file, sharedAccessPolicy){
+
+        try{
+
+            if (!this.fileService || !this.share || !directory || !file) throw Error("az-files::Files::getAccessToken - params missing");
+
+            var startDate = new Date();
+            var expiryDate = new Date(startDate);
+            expiryDate.setMinutes(startDate.getMinutes() + 5);
+        
+            if (!sharedAccessPolicy){
+                sharedAccessPolicy = {
+                    AccessPolicy: {
+                        Permissions: azure.FileUtilities.SharedAccessPermissions.READ,
+                        Start: startDate,
+                        Expiry: expiryDate
+                    }
+                };
+            }
+            
+            const token = this.fileService.generateSharedAccessSignature(this.share, directory, file, sharedAccessPolicy);
+
+            return token;
+
+        }catch(err){
+            throw err;
+        }
+    }
 }

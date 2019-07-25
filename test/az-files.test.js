@@ -100,7 +100,35 @@ describe('AzureFiles', () => {
             done(err);
         }
 
-    });           
+    });   
+    it('should get access token', async (done) => {
+
+        try {
+
+            jest.setTimeout(9000);
+            const testConfig = config.getConfigTest();
+
+            const dontDeleteThisContainer = "067d3c58-1332-4db5-8ed4-7a935fc91002";
+
+            const dontDeleteThisDirectory = "this-is-a-test";
+
+            const dontDeleteThisFile = "short_en.mp3";
+
+            // create class, which creates share==userName
+            const fileAzure = new AzureFiles(testConfig, dontDeleteThisContainer);
+
+            const accessToken = fileAzure.getAccessToken(dontDeleteThisDirectory, dontDeleteThisFile);
+
+            expect(accessToken).not.toBe(undefined);
+
+            done();
+
+        }catch(err){
+            done(err);
+
+        }
+        
+    });
 });  
 
 
