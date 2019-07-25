@@ -191,6 +191,38 @@ describe('routes', () => {
             }
 
         });
+
+        it('should upload file, and process - prototype', async(done)=>{
+
+            try{
+                jest.setTimeout(900000);
+                let timestamp = string.dateAsTimestamp();
+                let app = server.get();
+                    //decode token to figure out if user email 
+                const testConfig = config.getConfigTest();
+                let file = path.join(testConfig.rootDir, '/data/short.txt');
+                // upload file for authenticated file
+                // downloadURI returned
+                const downloadLog = await request(app)
+                .post('/upload')
+                .set('Content-type', 'text/plain')
+                .field("metadata", '{"a":"b","list":"this, is, my, list","stringifiedObject":"{a:1}"}')
+                .field("translations", ['it','de'])
+                //.field("tags","text, world, api") // figure this out, currently throws The value for one of the metadata key-value pairs is null, empty, or whitespace.
+                .attach('files', file)
+                .expect(200);
+                    
+                expect(downloadLog.body.files.length).toBe(5);
+                expect(downloadLog.body.files[0].URL).not.toBe(undefined);
+
+                done();
+
+    
+            } catch(err){
+                done(`err = ${JSON.stringify(err)}`);
+            }
+
+        });
         it('should use test user `user1`, get directories and files', async(done)=>{
 
             try{

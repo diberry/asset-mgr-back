@@ -51,8 +51,9 @@ const setupRoutes = (app) => {
     app.post('/tsv', postTsv);
 
     // services - require authentication
-    app.post('/upload', postUploadTextFile);
-    app.post('/uploadFiles', authClientRequest.verifyClientToken, authenticatedRoutes.uploadFiles);
+    //app.post('/upload', postUploadTextFile);
+    app.post('/upload', authenticatedRoutes.uploadFiles);
+    app.post('/uploadFiles', /*authClientRequest.verifyClientToken, */authenticatedRoutes.uploadFiles);
     app.get('/user/share', authClientRequest.verifyClientToken,authenticatedRoutes.getShare);
 
     // root
@@ -210,7 +211,8 @@ const postUploadTextFile = async (req, res, next) => {
     if (!req.app.config) throw "upload route - app not configured";
     let answer = textMiddleware.createResponseObject(req.app.config);
 
-    if (!req.files || (Object.keys(req.files).length == 0) || !req.files.fileToConvert) {
+    // protype - files is actually 1 file
+    if (!req.files || (Object.keys(req.files).length == 0) || !req.files) {
 
         answer.route = "upload";
         answer.statusCode = 400,
@@ -218,7 +220,8 @@ const postUploadTextFile = async (req, res, next) => {
         return res.status(answer.statusCode).send(answer);
     }
 
-    let file = req.files.fileToConvert;
+    // prototype - take first file only
+    let file = req.files.files;
 
     let config = req.app.config;
     config.answer = answer;

@@ -4,6 +4,8 @@ const uuid = require('uuid/v4');
 const fs = require("fs").promises;
 const translator = require('./translate.js');
 const tts = require('./tts.js');
+const AzureBlobs = require('./az-blobs.js');
+const strings = require('./strings.js');
 
 const createResponseObject = (config) => {
     return {
@@ -38,6 +40,17 @@ const uploadFiles = async (req, res, next) => {
         // user = req.user
         // directory = req.body.directoryName
 
+        // get user
+        const user = new User(req.app.config);
+
+        // prototype
+        req.body["directoryName"] = "prototype-" + strings.dateAsTimestamp();
+        req.user = "user1";
+        const copyPermissions = undefined;
+        const blobOptions = undefined;
+        const storageConnectionString = req.app.config.azstorage.connectionString;
+
+        
         // handled only 1 file right now
         // || (Object.keys(req.files).length == 0)
         if (!req.files  || !req.body || !req.body.directoryName || !req.user) {
@@ -50,8 +63,6 @@ const uploadFiles = async (req, res, next) => {
         let answer = createResponseObject(req.app.config);
         answer.files = [];
 
-        // get user
-        const user = new User(req.app.config);
         const returnedUserObj = await user.get(req.user);
 
         if(!returnedUserObj) throw("routes-authenticated::uploadFiles - can't get authenticated user");
@@ -73,7 +84,7 @@ const uploadFiles = async (req, res, next) => {
         // get culture
         let culture = undefined;
         culture = await getCultureFromText(req.app.config.translator, text);
-
+        answer["originalCulture"]=culture;
 
         // file metadata
         let optionalMetadataObj = undefined;
@@ -83,7 +94,6 @@ const uploadFiles = async (req, res, next) => {
             if(optionalMetadataObj && culture){
                 Object.assign(optionalMetadataObj,{'culture':culture});
             }
-    
         }
 
         // part the incoming file name
@@ -101,14 +111,20 @@ const uploadFiles = async (req, res, next) => {
         const downloadURL = await user.addFileToSubdirAsync(req.body.directoryName, newFileNameWithCulture, localPathForOriginalFile, optionalContentSettings, optionalMetadataObj);
 
         if(downloadURL){
+
+            // the file service directory and the blob service directory are the same on purpose
+            const downloadOriginalBlobURI = await copyToBlob(storageConnectionString, req.app.config, newFileNameWithCulture, req.body.directoryName, downloadURL, req.body.directoryName);          
+
             // add incoming file to array
             answer.files.push({
                 "filename": newFileNameWithCulture,
-                "URL": downloadURL,
+                "URL": downloadOriginalBlobURI,
                 "text": text,
                 "culture":culture
             });
         }
+
+        
 
         const voice = undefined;
         const mp3Path =  path.join(req.app.config.rootDir, `./${req.app.config.upload.processingDir}`);
@@ -126,18 +142,21 @@ const uploadFiles = async (req, res, next) => {
             // add audio file to Azure Storage Files   
             const audioFileDownloadURL = await user.addFileToSubdirAsync(req.body.directoryName, audioFilePathParts.base, localFilePathAndNameToAudioFile, audioFileContentSettings, audioFileMetadataSettings);
 
-            // TBD: add file to blob storage too - for public consumption
+            const downloadAudioURI = await copyToBlob(storageConnectionString, req.app.config, audioFilePathParts.base, localFilePathAndNameToAudioFile, audioFileDownloadURL, req.body.directoryName);
 
             if(audioFileDownloadURL){
                 // add incoming file to array
                 answer.files.push({
                     "filename": audioFilePathParts.base,
-                    "URL": audioFileDownloadURL,
+                    "URL": downloadAudioURI,
                     "text": text,
                     "culture":culture
                 });
             }
         }
+
+        // prototype
+        req.body["translations"]=['it','de'];
 
         // if asking for translations
         // TBD: translation to audio file
@@ -172,10 +191,12 @@ const uploadFiles = async (req, res, next) => {
                 // add file to Azure Storage Files
                 const downloadURL = await user.addFileToSubdirAsync(req.body.directoryName, displayFileName, localPathAndCulturedFileName, optionalContentSettings, pathParts.metadata);
 
+                const downloadPublicURI = await copyToBlob(storageConnectionString, req.app.config, displayFileName, req.body.directoryName, downloadURL, req.body.directoryName);
+
                 // add incoming file to array
                 answer.files.push({
                     "filename": displayFileName,
-                    "URL": downloadURL,
+                    "URL": downloadPublicURI,
                     "text": translation.text,
                     "culture":translation.to
                 });
@@ -198,10 +219,12 @@ const uploadFiles = async (req, res, next) => {
         // add file to Azure Storage Files
         const operationalLogURL = await user.addFileToSubdirAsync(req.body.directoryName, operationalLogFileName, localPathForOperationalLog, undefined, undefined);
 
+        const logDownloadURI = await copyToBlob(storageConnectionString, req.app.config, operationalLogFileName, req.body.directoryName, operationalLogURL, req.body.directoryName);
+
         answer.files.push({
             "log": 'operationalLog',
             "filename": operationalLogFileName,
-            "URL": operationalLogURL,
+            "URL": logDownloadURI,
             "text": undefined,
             "culture":undefined
         });
@@ -215,7 +238,26 @@ const uploadFiles = async (req, res, next) => {
     }
     
 }
+/**
+ * 
+ * @param {*} storageConnectionString 
+ * @param {*} appConfig 
+ * @param {*} fileName 
+ * @param {*} localPathToFileName 
+ * @param {*} downloadURL 
+ * @param {*} directoryName 
+ * @returns public download URI
+ */
+const copyToBlob = async (storageConnectionString, appConfig, fileName, fileServiceDirectory, downloadURL, blobServiceContainerName)=>{
+    // copy from file to blob
+    // prototype
+    const blobService = new AzureBlobs(storageConnectionString, appConfig); 
+    const copyResponse = await blobService.copyFileToBlobAsync("067d3c58-1332-4db5-8ed4-7a935fc91002",fileServiceDirectory, fileName, undefined, downloadURL, blobServiceContainerName, fileName, undefined, undefined);
 
+    const blobProperties = await blobService.getBlobProperties(blobServiceContainerName, fileName);  
+
+    return blobProperties.URI;
+}
 const getCultureFromText = async (translatorConfig, text) => {
 
     if (!translatorConfig || !text) throw ("routes-authenticated-user::getCultureFromText - missing params");

@@ -120,12 +120,17 @@ module.exports = class AzureBlobs {
         let self = this;
 
         // Assumes File Share is exactly the same as Blob Container
-        const azureFiles = new AzureFiles(self.appConfig, originatingShare);
-        const accessToken = azureFiles.getAccessToken(originatingFileServiceDirectory, originatingFileServiceFile);
+        // if there isn't an access token, create one
+        if(azureFileURI.indexOf('?st=') == -1){
+            
+            const azureFiles = new AzureFiles(self.appConfig, originatingShare);
+            const accessToken = azureFiles.getAccessToken(originatingFileServiceDirectory, originatingFileServiceFile);
 
-        if(!accessToken)throw "az-blobs::copyFileToBlobAsync - can't get access token";
+            if(!accessToken)throw "az-blobs::copyFileToBlobAsync - can't get access token";
 
-        azureFileURI = `${azureFileURI}?${accessToken}`;
+            // TBD: is the question mark already in the accessToken
+            azureFileURI = `${azureFileURI}?${accessToken}`;
+        }
 
         return new Promise(function(resolve, reject) {
     
@@ -139,7 +144,7 @@ module.exports = class AzureBlobs {
 
                 if (error) return reject(error);
 
-                self.blobService.startCopyBlob(azureFileURI, targetContainer, targetBlob, options, (error, result) => {
+                self.blobService.startCopyBlob(azureFileURI, targetContainer, targetBlob, null, (error, result) => {
 
                     if (error) return reject(error);
 
