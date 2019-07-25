@@ -1,0 +1,30 @@
+{
+    "container": "test-cb-1564085505560",
+    "name": "short_en.mp3",
+    "metadata": {},
+    "lastModified": "Thu, 25 Jul 2019 20:11:46 GMT",
+    "creationTime": "Thu, 25 Jul 2019 20:11:46 GMT",
+    "etag": "\"0x8D7113C51F06EC1\"",
+    "blobType": "BlockBlob",
+    "contentLength": "15552",
+    "serverEncrypted": "true",
+    "requestId": "3d4213da-401e-0031-3f25-438c05000000",
+    "accessTier": "Hot",
+    "accessTierInferred": true,
+    "contentSettings": {
+        "contentType": "application/octet-stream"
+    },
+    "lease": {
+        "status": "unlocked",
+        "state": "available"
+    },
+    "copy": {
+        "id": "c739d39e-adb3-47eb-aa71-660c1dac6727",
+        "status": "success",
+        "source": "https://diberryassetmgrtest.file.core.windows.net/067d3c58-1332-4db5-8ed4-7a935fc91002/this-is-a-test/short_en.mp3?st=2019-07-25T20%3A11%3A45Z&se=2019-07-25T20%3A16%3A45Z&sp=r&sv=2018-03-28&sr=f&sig=oh0ef1hRTiLy%2BYZLhhwF%2F0u%2F276rMoOgycegnIDIYdw%3D",
+        "progress": "15552/15552",
+        "bytesCopied": 15552,
+        "totalBytes": 15552,
+        "completionTime": "Thu, 25 Jul 2019 20:11:46 GMT"
+    }
+}
