@@ -53,6 +53,7 @@ const setupRoutes = (app) => {
     // services - require authentication
     app.post('/upload', postUploadTextFile);
     app.post('/uploadFiles', authClientRequest.verifyClientToken, authenticatedRoutes.uploadFiles);
+    app.get('/user/share', authClientRequest.verifyClientToken,authenticatedRoutes.getShare);
 
     // root
     app.get('/', getRoot);

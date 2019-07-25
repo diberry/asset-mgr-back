@@ -257,8 +257,65 @@ const deleteUser = async (req, res, next)=>{
         next(err);
     }
 }
+const getShare = async (req, res, next) => {
+
+    try{
+
+        if (!req.user) {
+            answer.statusCode = 400,
+            answer.error = "empty params";
+            return res.status(answer.statusCode).send(answer);
+        }
+
+        // create return JSON template
+        let answer = createResponseObject(req.app.config);
+        answer.files = [];
+
+        // get user
+        const user = new User(req.app.config);
+        const returnedUserObj = await user.get(req.user);
+        
+        if(!returnedUserObj) throw("routes-authenticated::getShare - can't get authenticated user");
+
+        // get list of directories in share
+        const dirsList = await user.listDirectoriesAsync();
+
+        answer["directories"] = dirsList;
+
+        // get contents of each directory
+        // each element of the array is a JSON object
+        // [{"name":"this-is-a-test"}]
+        for(const directory in dirsList){
+
+            const directoryName = dirsList[directory].name;
+
+            // each element is a JSON object
+            // [{"name":"operation-d39a27ee-f8c1-4eab-9e59-a2795813007d.json","contentLength":"2000"}]
+            const dirContents = await user.listFilesInDirectoryAsync(directoryName);
+
+
+
+            // get each file's download URL
+            for(const file in dirContents){
+
+                const fileName = dirContents[file].name;
+
+                const fileURL = await user.getFileUrlAsync(directoryName, fileName);
+                dirContents[file]["URL"] = fileURL;
+            }
+            dirsList[directory]["files"] = dirContents;
+        
+        }
+
+        return res.status(200).json(answer);
+
+    } catch(err){
+        next(err);
+    }
+}
 module.exports = {
     createResponseObject:createResponseObject,
     uploadFiles: uploadFiles,
-    deleteUser: deleteUser
+    deleteUser: deleteUser,
+    getShare:getShare
 };

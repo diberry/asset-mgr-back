@@ -1,0 +1,39 @@
+{
+    "dateTime": "2019-07-25T01:14:21.256Z",
+    "id": "2527e55d-83e4-4e0a-a65a-0a090039e2cf",
+    "ver": "0.1",
+    "status": null,
+    "files": [],
+    "directories": [
+        {
+            "name": "this-is-a-test",
+            "files": [
+                {
+                    "name": "operation-d39a27ee-f8c1-4eab-9e59-a2795813007d.json",
+                    "contentLength": "2000",
+                    "URL": "https://diberryassetmgrtest.file.core.windows.net/067d3c58-1332-4db5-8ed4-7a935fc91002/this-is-a-test/operation-d39a27ee-f8c1-4eab-9e59-a2795813007d.json?st=2019-07-25T01%3A14%3A38Z&se=2019-07-25T01%3A19%3A38Z&sp=r&sv=2018-03-28&sr=f&sig=0krkp0ojUNvk%2Feg4DE2tX%2BBp75NNJB3foQJBIvwkYQ8%3D"
+                },
+                {
+                    "name": "short_de.txt",
+                    "contentLength": "18",
+                    "URL": "https://diberryassetmgrtest.file.core.windows.net/067d3c58-1332-4db5-8ed4-7a935fc91002/this-is-a-test/short_de.txt?st=2019-07-25T01%3A14%3A38Z&se=2019-07-25T01%3A19%3A38Z&sp=r&sv=2018-03-28&sr=f&sig=ezhAc99P46vyKPJIfWIrxwiMp1dpo%2BO4KcbLzcK5gEI%3D"
+                },
+                {
+                    "name": "short_en.mp3",
+                    "contentLength": "15552",
+                    "URL": "https://diberryassetmgrtest.file.core.windows.net/067d3c58-1332-4db5-8ed4-7a935fc91002/this-is-a-test/short_en.mp3?st=2019-07-25T01%3A14%3A38Z&se=2019-07-25T01%3A19%3A38Z&sp=r&sv=2018-03-28&sr=f&sig=ddsufkxGATxZ7ogAUkbVYh%2B7QGuP%2FDj2zPyAbFFp8Yw%3D"
+                },
+                {
+                    "name": "short_en.txt",
+                    "contentLength": "15",
+                    "URL": "https://diberryassetmgrtest.file.core.windows.net/067d3c58-1332-4db5-8ed4-7a935fc91002/this-is-a-test/short_en.txt?st=2019-07-25T01%3A14%3A38Z&se=2019-07-25T01%3A19%3A38Z&sp=r&sv=2018-03-28&sr=f&sig=GLYlYruM5kBhXBZ6MtZwq34d5d2NFpNqs3Xja2o9o7g%3D"
+                },
+                {
+                    "name": "short_it.txt",
+                    "contentLength": "20",
+                    "URL": "https://diberryassetmgrtest.file.core.windows.net/067d3c58-1332-4db5-8ed4-7a935fc91002/this-is-a-test/short_it.txt?st=2019-07-25T01%3A14%3A38Z&se=2019-07-25T01%3A19%3A38Z&sp=r&sv=2018-03-28&sr=f&sig=sN4c8H6sUivKH%2BC%2BllN51LCT146CludM7fsPEEMYnkA%3D"
+                }
+            ]
+        }
+    ]
+}

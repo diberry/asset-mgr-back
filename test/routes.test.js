@@ -1,5 +1,5 @@
-const request = require('supertest'),
-    fs = require("fs").promises;
+const request = require('supertest');
+const fs = require("fs").promises;
 
 
 const config = require("../src/config.js");
@@ -191,6 +191,54 @@ describe('routes', () => {
             }
 
         });
+        it('should use test user `user1`, get directories and files', async(done)=>{
+
+            try{
+                jest.setTimeout(900000);
+                let app = server.get();
+
+                let user = "user1";
+                let pwd = "user1";
+        
+                // login user - returns token
+                const loggedInUser = await request(app)
+                .post('/login')
+                .set('Content-type', 'application/json')
+                .send({username: user, password: pwd})
+                .expect(200);
+   
+                expect(loggedInUser.body.success).toEqual(true);
+                expect(loggedInUser.body.token).not.toBe(undefined);
+
+                const returnedToken = loggedInUser.body.token;
+
+                //decode token to figure out if user email 
+                const testConfig = config.getConfigTest();
+                const token = new Token(testConfig.secret);
+                const decodedToken = await token.verifyTokenAsync(returnedToken);
+
+                expect(decodedToken.user.user).toEqual(user);
+
+                // validate only authenticated user can get route 
+                const directoriesList = await request(app)
+                .get('/user/share')
+                .set('Content-type','application/json')
+                .set('Authorization', 'Bearer ' + returnedToken)
+                .expect(200);
+                            
+                expect(directoriesList.body).not.toEqual(undefined);
+                expect(directoriesList.body.directories.length).toBe(1);
+                expect(directoriesList.body.directories[0].files.length).toBe(5);
+
+
+                done();
+
+    
+            } catch(err){
+                done(`err = ${JSON.stringify(err)}`);
+            }
+
+        });        
         it('should fail if bearerToken is `Bearer [object Object]`', async(done)=>{
 
             try{

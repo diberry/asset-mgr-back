@@ -146,6 +146,17 @@ module.exports = class User {
 
         return fileURL;        
     }
+    async getFileUrlAsync(directory, fileName){
+        if(!this.UID) throw("user::getFileUrlAsync - prereqs are empty");
+
+        if(!directory || !fileName) throw("user::getFileUrlAsync - params are empty");     
+        
+        const azureFiles = new AzureFiles(this.config, this.UID);
+
+        const fileURL = azureFiles.getFileUrlAsync(directory, fileName);
+
+        return fileURL;
+    }
     // assumes no nested dirs
     async listDirectoriesAsync(){
         if(!this.UID) throw("user::listDirectories - prereqs are empty");
@@ -153,7 +164,7 @@ module.exports = class User {
         const baseDirectory = "";
 
         const azureFiles = new AzureFiles(this.config, this.UID);
-        const filesAndDirsForBase = await azureFiles.getDirectoriesAndFiles(baseDirectory);
+        const filesAndDirsForBase = await azureFiles.getDirectoriesAndFilesAsync(baseDirectory);
 
         return filesAndDirsForBase.directories;
     }
@@ -164,7 +175,7 @@ module.exports = class User {
         if(!directory) throw("user::listFilesInDirectory - params are empty");
 
         const azureFiles = new AzureFiles(this.config, this.UID);
-        const filesAndDirsForSubdir = await azureFiles.getDirectoriesAndFiles(directory.toLowerCase());
+        const filesAndDirsForSubdir = await azureFiles.getDirectoriesAndFilesAsync(directory.toLowerCase());
 
         return filesAndDirsForSubdir.files;
     }
