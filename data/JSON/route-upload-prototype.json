@@ -1,0 +1,41 @@
+{
+    "dateTime": "2019-07-25T23:58:01.618Z",
+    "id": "cc40346d-f7c0-4aca-a4de-81e17a36ee7b",
+    "ver": "0.1",
+    "status": null,
+    "files": [
+        {
+            "filename": "short_en.txt",
+            "URL": "https://diberryassetmgrtest.blob.core.windows.net/prototype-1564099081618/short_en.txt",
+            "text": "This is a test.",
+            "culture": "en"
+        },
+        {
+            "filename": "short_en.mp3",
+            "URL": "https://diberryassetmgrtest.blob.core.windows.net/prototype-1564099081618/short_en.mp3",
+            "text": "This is a test.",
+            "culture": "en"
+        },
+        {
+            "filename": "short_it.txt",
+            "URL": "https://diberryassetmgrtest.blob.core.windows.net/prototype-1564099081618/short_it.txt",
+            "text": "Questo è un test.",
+            "culture": "it"
+        },
+        {
+            "filename": "short_de.txt",
+            "URL": "https://diberryassetmgrtest.blob.core.windows.net/prototype-1564099081618/short_de.txt",
+            "text": "Dies ist ein Test.",
+            "culture": "de"
+        },
+        {
+            "log": "operationalLog",
+            "filename": "operation-688b7022-f325-408c-a40d-64c26972d103.json",
+            "URL": "https://diberryassetmgrtest.blob.core.windows.net/prototype-1564099081618/operation-688b7022-f325-408c-a40d-64c26972d103.json"
+        }
+    ],
+    "originalCulture": "en",
+    "operation": {
+        "ID": "688b7022-f325-408c-a40d-64c26972d103"
+    }
+}
