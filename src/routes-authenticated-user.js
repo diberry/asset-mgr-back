@@ -228,6 +228,8 @@ const uploadFiles = async (req, res, next) => {
 
         const logDownloadURI = await copyToBlob(storageConnectionString, req.app.config, operationalLogFileName, req.body.directoryName, operationalLogURL, req.body.directoryName);
 
+        //await deleteFile(operationalLogFileName);
+
         answer.files.push({
             "log": 'operationalLog',
             "filename": operationalLogFileName,
