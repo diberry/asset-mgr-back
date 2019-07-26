@@ -98,9 +98,9 @@ const uploadFiles = async (req, res, next) => {
 
         // part the incoming file name
         let pathParts = path.parse(localPathForOriginalFile);
-        pathParts.originalName = localFileNameParsed.name;
+        pathParts.originalName = localFileNameParsed.name || "";
         pathParts.UID = returnedUserObj.UID;
-        pathParts.metadata = optionalMetadataObj;
+        pathParts.metadata = optionalMetadataObj || {};
 
         // add culture to end of incoming file name
         let newFileNameWithCulture = localFileNameParsed.name + "_" + culture + pathParts.ext;
@@ -122,9 +122,10 @@ const uploadFiles = async (req, res, next) => {
                 "text": text,
                 "culture":culture
             });
-        }
 
-        
+            // delete local file
+            await deleteFile(localPathForOriginalFile);
+        }
 
         const voice = undefined;
         const mp3Path =  path.join(req.app.config.rootDir, `./${req.app.config.upload.processingDir}`);
@@ -152,6 +153,7 @@ const uploadFiles = async (req, res, next) => {
                     "text": text,
                     "culture":culture
                 });
+                await deleteFile(localFilePathAndNameToAudioFile);
             }
         }
 
@@ -193,13 +195,18 @@ const uploadFiles = async (req, res, next) => {
 
                 const downloadPublicURI = await copyToBlob(storageConnectionString, req.app.config, displayFileName, req.body.directoryName, downloadURL, req.body.directoryName);
 
-                // add incoming file to array
-                answer.files.push({
-                    "filename": displayFileName,
-                    "URL": downloadPublicURI,
-                    "text": translation.text,
-                    "culture":translation.to
-                });
+                if(downloadPublicURI){
+
+                    // add incoming file to array
+                    answer.files.push({
+                        "filename": displayFileName,
+                        "URL": downloadPublicURI,
+                        "text": translation.text,
+                        "culture":translation.to
+                    });
+
+                    await deleteFile(localPathAndCulturedFileName);
+                }
             };
         }
 
@@ -237,6 +244,23 @@ const uploadFiles = async (req, res, next) => {
         next(err);
     }
     
+}
+//prototype
+const deleteFile = async (localPathToFile) => {
+    try{
+        const fileStat = await fs.stat(localPathToFile);
+    
+        if(fileStat){
+          console.log(`${localPathToFile} exists. Deleting now ...`);
+          await fs.unlink(localPathToFile);
+        } else {
+          //Show in red
+          console.log(`${localPathToFile} not found. Can't delete.`);
+        }
+    
+    }catch(err){
+        throw(err);
+    }
 }
 /**
  * 

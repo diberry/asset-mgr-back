@@ -192,7 +192,7 @@ describe('routes', () => {
 
         });
 
-        it('should upload file, and process - prototype', async(done)=>{
+        it.only('should upload file, and process - prototype', async(done)=>{
 
             try{
                 jest.setTimeout(900000);
@@ -205,9 +205,9 @@ describe('routes', () => {
                 // downloadURI returned
                 const downloadLog = await request(app)
                 .post('/upload')
-                .set('Content-type', 'text/plain')
-                .field("metadata", '{"a":"b","list":"this, is, my, list","stringifiedObject":"{a:1}"}')
-                .field("translations", ['it','de'])
+                //.set('Content-type', 'text/plain')
+                //.field("metadata", '{"a":"b","list":"this, is, my, list","stringifiedObject":"{a:1}"}')
+                //.field("translations", ['it','de'])
                 //.field("tags","text, world, api") // figure this out, currently throws The value for one of the metadata key-value pairs is null, empty, or whitespace.
                 .attach('files', file)
                 .expect(200);

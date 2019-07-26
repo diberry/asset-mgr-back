@@ -108,19 +108,21 @@ const textToSpeech = async (accessToken,  filenameandpath, host,  text, voice)=>
                 // After all the data is saved, respond with a simple html form so they can post more data
                 response.on('end', function () {
                     //console.log("done with writeStream");
+                    fs.stat(filenameandpath, function(err, stats) {
+                        console.log(JSON.stringify(stats));
+                    });
+                    return {
+                        file: filenameandpath,
+                        text: text,
+                        statusCode: response.statusCode,
+                        statusMessage: response.statusMessage
+                    };                    
                 });
 
                 // This is here incase any errors occur
                 writeStream.on('error', function (err) {
                     //console.log(`err with writeStream - ${err}`);
                 });
-            } else {
-                return {
-                    file: filenameandpath,
-                    text: text,
-                    statusCode: response.statusCode,
-                    statusMessage: response.statusMessage
-                };
             }
         })
         .on('error', function(err) {
@@ -131,6 +133,12 @@ const textToSpeech = async (accessToken,  filenameandpath, host,  text, voice)=>
                 err: err
             };
           })
+
+        // TBD: this is wrong - fix with queues
+        const sleep = (waitTimeInMs) => new Promise(resolve => {
+            setTimeout(resolve, waitTimeInMs);
+        });
+        await sleep(10000);
         return request;
 }
 
@@ -144,7 +152,7 @@ const textToSpeech = async (accessToken,  filenameandpath, host,  text, voice)=>
  */
 const mp3 = async function(options, textArray) {
 
-
+    try{
 
         if (!options) throw "Param is empty: options";
         if (!options.text) throw "Param is empty: options.text";
@@ -211,13 +219,17 @@ const mp3 = async function(options, textArray) {
 
         // get binary - tts
         answer.result["binary"] = await textToSpeech(options.accessToken,answer.options.path,answer.options.ttsService.hostTTS, answer.options.text, answer.options.voice);
-        
+     
         answer.result["success"]=true;
         answer.result["file"]=answer.options.path;
         
         return answer;
 
+    }catch(err){
+        throw (err);
+    }
 }
+
 /**
  * 
  * @param {*} ttsConfig - Key and Host
