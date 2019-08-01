@@ -1,6 +1,9 @@
 # Cognitive Asset manager - backend
 Manage assets and models built from assets for Cognitive Services
 
+## Post-hackathon update
+This project has been separated out into a streaming upload server and triggered Azure functions. The streaming server has been moved to a separate [repo](https://github.com/diberry/upload-file-server.git). 
+
 Project # 82038
 
 ## Getting started
