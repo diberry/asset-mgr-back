@@ -35,7 +35,7 @@
     "jwks-rsa": "^1.6.0",
     "moment": "^2.24.0",
     "remove-markdown": "^0.3.0",
-    "requestretry": "^4.0.0",
+    "requestretry": "^7.0.0",
     "sequelize": "^5.9.2",
     "tedious": "^6.2.0",
     "tsv": "^0.2.0",
