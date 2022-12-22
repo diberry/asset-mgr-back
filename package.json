@@ -31,7 +31,7 @@
     "express-session": "^1.16.2",
     "express-winston": "^3.1.0",
     "fs-extra": "^8.0.1",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "jwks-rsa": "^1.6.0",
     "moment": "^2.24.0",
     "remove-markdown": "^0.3.0",
